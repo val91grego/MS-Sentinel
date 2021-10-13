@@ -1,0 +1,16 @@
+//This query helps you find which of the Linux hosts that considered active (Heartbeat) to Log Analytics are not sending their Syslog Events
+let LinuxHeartbeat=(Heartbeat
+    | where TimeGenerated >= ago(3d)
+    | where OSType == "Linux"
+    | extend Host=toupper(Computer)
+    | distinct Host);
+let LinuxEvents=(Syslog
+    | where TimeGenerated >= ago(3d)
+    | extend Host=toupper(Computer)
+    | distinct Host);
+LinuxHeartbeat
+| join kind=leftouter (LinuxEvents) on $left.Host == $right.Host
+| extend HearbeatHost = Host, LoggingHost = Host1
+//Remove below comment to visualize only inactive hosts
+//| where isempty(LoggingHost)
+| project HearbeatHost, LoggingHost
