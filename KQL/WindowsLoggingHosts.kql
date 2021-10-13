@@ -1,0 +1,15 @@
+//This query helps you find which of the Windows hosts that considered active (Heartbeat) to Log Analytics are not sending their Security Events
+let WindowsHeartbeat=(Heartbeat
+    | where TimeGenerated >= ago(3d)
+    | where OSType == "Windows"
+    | extend Host=toupper(Computer)
+    | distinct Host);
+let WindowsEvents=(cross_workspace_windows_laagent
+    | where TimeGenerated >= ago(3d)
+    | extend Host=toupper(Computer)
+    | distinct CHost);
+WindowsHeartbeat
+| join kind=leftouter (WindowsEvents) on $left.Host == $right.Host
+| extend HearbeatHost = Host, LoggingHost = Host1
+//| where isempty(LoggingHost)
+| project HearbeatHost, LoggingHost
