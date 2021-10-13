@@ -1,0 +1,30 @@
+SecurityEvent
+| extend ActivitySplit=split(Activity, " - ")
+| extend Action = tostring(ActivitySplit[1])
+| where AccountType == "User"
+| where EventID in ("4732", "4733", "4756", "4757", "4728", "4729")
+| where TargetUserName contains "administrator" 
+    or TargetUserName contains "domain admins" 
+    or TargetUserName contains "enterprise admins" 
+    or TargetUserName contains "server operators" 
+    or TargetUserName contains "backup operators" 
+    or TargetUserName contains "Schema admins" 
+    or TargetUserName contains "Account operation"
+    or TargetUserName contains "Remote Desktop Users" 
+    or TargetUserName contains "DBAdmin"
+| extend SourceUser=SubjectUserName
+| extend GroupAddedOrRemoved=TargetUserName
+| extend UserAddedOrRemovedSID=MemberSid
+| extend GroupSid=TargetSid
+| extend AccountThatAddedOrRemovedUserSID = SubjectUserSid
+| summarize StartTime = min(TimeGenerated), EndTime = max(TimeGenerated)
+    by
+    UserAddedOrRemovedSID,
+    GroupAddedOrRemoved,
+    GroupSid,
+    AccountThatAddedOrRemovedUserSID,
+    SourceUser,
+    EventID,
+    Activity,
+    Computer,
+    Action
