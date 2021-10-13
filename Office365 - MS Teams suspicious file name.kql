@@ -4,7 +4,7 @@ OfficeActivity
 | where UserId !~ "app@sharepoint"
 | where SourceRelativeUrl has "Microsoft Teams Chat Files"
 | where Operation =~ "FileUploaded"
-| where SourceFileName has_any(suspiciousFilenames)
+| where SourceFileName has_any(suspiciousFilenames)k
 | project
     TimeGenerated,
     UserId,
