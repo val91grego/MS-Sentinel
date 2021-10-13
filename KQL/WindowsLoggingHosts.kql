@@ -4,12 +4,13 @@ let WindowsHeartbeat=(Heartbeat
     | where OSType == "Windows"
     | extend Host=toupper(Computer)
     | distinct Host);
-let WindowsEvents=(cross_workspace_windows_laagent
+let WindowsEvents=(SecurityEvent
     | where TimeGenerated >= ago(3d)
     | extend Host=toupper(Computer)
-    | distinct CHost);
+    | distinct Host);
 WindowsHeartbeat
 | join kind=leftouter (WindowsEvents) on $left.Host == $right.Host
 | extend HearbeatHost = Host, LoggingHost = Host1
+//Remove below comment to visualize only inactive hosts
 //| where isempty(LoggingHost)
 | project HearbeatHost, LoggingHost
