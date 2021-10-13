@@ -1,0 +1,9 @@
+//This query helps you estimate the daily GB Ingestion to LogAnalytics
+let daystoSearch = 31d; 
+union withsource = tt * 
+| where TimeGenerated > startofday(ago(daystoSearch)) and TimeGenerated < startofday(now()) 
+| where _IsBillable == True 
+| summarize TotalGBytes =round(sum(_BilledSize / (1024 * 1024 * 1024)), 2) by bin(TimeGenerated, 1d), Solution=tt 
+| order by TimeGenerated
+// Uncomment the beloew for average GB/DAY Estimation
+//| summarize avg(TotalGBytes)
