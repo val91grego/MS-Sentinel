@@ -1,0 +1,10 @@
+AzureActivity
+| order by TimeGenerated
+| where CategoryValue == 'ServiceHealth'
+| where OperationNameValue == "Microsoft.ServiceHealth/security/action"
+| where ActivityStatusValue == "Active"
+| where Level == "Error"
+| where isnotempty(Properties)
+| extend VulnerabilityTitle = tostring(parse_json(tostring(parse_json(Properties).eventProperties)).defaultLanguageTitle)
+| extend ServiceName = tostring(parse_json(tostring(parse_json(tostring(Properties_d.eventProperties)).impactedServices))[0].ServiceName)
+| project TimeGenerated, ServiceName, VulnerabilityTitle, SubscriptionId
