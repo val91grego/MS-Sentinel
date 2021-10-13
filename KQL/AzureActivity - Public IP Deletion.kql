@@ -1,0 +1,12 @@
+AzureActivity
+| order by TimeGenerated
+| where OperationName == "Delete Public Ip Address"
+| where ActivityStatus == "Accepted"
+| project
+    TimeGenerated,
+    EventSubmissionTimestamp,
+    ResourceGroup,
+    SubscriptionId,
+    Caller,
+    CallerIpAddress,
+    Resource
