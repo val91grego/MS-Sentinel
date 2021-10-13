@@ -1,0 +1,14 @@
+// Detects LogAnalytics/AzSentinel Deletion actions through AzureActivity logs
+AzureActivity
+| where OperationName == "Delete Workspace"
+| where ActivityStatus == "Succeeded"
+| order by TimeGenerated
+| project
+    TimeGenerated,
+    EventSubmissionTimestamp,
+    OperationName,
+    Resource,
+    ResourceGroup,
+    SubscriptionId,
+    Caller,
+    CallerIpAddress
