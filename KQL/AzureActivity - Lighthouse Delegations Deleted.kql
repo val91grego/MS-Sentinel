@@ -1,0 +1,12 @@
+AzureActivity
+| where ResourceProviderValue == "MICROSOFT.MANAGEDSERVICES"
+| where OperationNameValue in ("MICROSOFT.MANAGEDSERVICES/REGISTRATIONASSIGNMENTS/DELETE", "MICROSOFT.MANAGEDSERVICES/REGISTRATIONDEFINITIONS/DELETE")
+| where ActivityStatusValue == "Success"
+| extend eventSubmissionTimestamp = tostring(Properties_d.eventSubmissionTimestamp)
+| extend roleAssignmentScope = tostring(parse_json(tostring(parse_json(Authorization).evidence)).roleAssignmentScope)
+| project
+    TimeGenerated,
+    eventSubmissionTimestamp,
+    Caller,
+    CallerIpAddress,
+    roleAssignmentScope
