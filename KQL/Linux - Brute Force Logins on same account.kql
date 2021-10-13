@@ -1,0 +1,13 @@
+let SSH_FailedLogon=(Syslog
+| where SourceSystem == "Linux"
+| where ProcessName =~ "sshd"
+| where SyslogMessage startswith "Failed password" or SyslogMessage startswith "Invalid user"
+| extend newSyslogMessage = trim_end(" ssh2", SyslogMessage)
+| parse kind=regex newSyslogMessage with "^(?:Invalid user |Failed password for (?:illegal|invalid user )?)"destinationUserName:string" from "sourceAddress:string" port "sourcePort:string"$"
+| project-away newSyslogMessage);
+let TimeFrame = 10m;
+let failedThreshold = 60;
+SSH_FailedLogon
+| where TimeGenerated > ago(TimeFrame) 
+| summarize StartTimeUtc = min(TimeGenerated), EndTimeUtc = max(TimeGenerated), TotalFailedLogons = count() by destinationUserName
+| where TotalFailedLogons >= failedThreshold
