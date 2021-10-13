@@ -1,0 +1,16 @@
+let suspiciousFilenames = dynamic(['password', 'admin', 'confidential_term', 'credit_card', 'credentials', 'username']);
+OfficeActivity
+| where RecordType =~ "SharePointFileOperation"
+| where UserId !~ "app@sharepoint"
+| where SourceRelativeUrl has "Microsoft Teams Chat Files"
+| where Operation =~ "FileUploaded"
+| where SourceFileName has_any(suspiciousFilenames)
+| project
+    TimeGenerated,
+    UserId,
+    ClientIP,
+    Site_Url,
+    OfficeObjectId,
+    SourceFileName,
+    CustomerName
+| where SourceFileName has_any(suspiciousFilenames)
