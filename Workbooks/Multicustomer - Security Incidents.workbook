@@ -1,0 +1,934 @@
+{
+  "version": "Notebook/1.0",
+  "items": [
+    {
+      "type": 1,
+      "content": {
+        "json": "## Mutlicustomer - Security Incidents\r\n\r\nThis dashboard shows incidents collected in SecurityIncident tables of all customer Sentinel workspaces.\r\n\r\n - Table: SecurityIncident\r\n\r\n - Query: cross_workspace_securityincidents | order by TimeGenerated\r\n",
+        "style": "info"
+      },
+      "name": "text - 2",
+      "styleSettings": {
+        "margin": "10",
+        "padding": "10",
+        "showBorder": true
+      }
+    },
+    {
+      "type": 9,
+      "content": {
+        "version": "KqlParameterItem/1.0",
+        "parameters": [
+          {
+            "id": "20b83fa1-a693-41dd-9612-1946399dcc65",
+            "version": "KqlParameterItem/1.0",
+            "name": "TimeRange",
+            "type": 4,
+            "isRequired": true,
+            "value": {
+              "durationMs": 86400000
+            },
+            "typeSettings": {
+              "selectableValues": [
+                {
+                  "durationMs": 300000
+                },
+                {
+                  "durationMs": 900000
+                },
+                {
+                  "durationMs": 1800000
+                },
+                {
+                  "durationMs": 3600000
+                },
+                {
+                  "durationMs": 14400000
+                },
+                {
+                  "durationMs": 43200000
+                },
+                {
+                  "durationMs": 86400000
+                },
+                {
+                  "durationMs": 172800000
+                },
+                {
+                  "durationMs": 259200000
+                },
+                {
+                  "durationMs": 604800000
+                },
+                {
+                  "durationMs": 1209600000
+                },
+                {
+                  "durationMs": 2419200000
+                },
+                {
+                  "durationMs": 2592000000
+                },
+                {
+                  "durationMs": 5184000000
+                },
+                {
+                  "durationMs": 7776000000
+                }
+              ]
+            },
+            "timeContext": {
+              "durationMs": 86400000
+            }
+          },
+          {
+            "id": "b19accbc-e38f-419c-af09-62bc54af15a6",
+            "version": "KqlParameterItem/1.0",
+            "name": "Customer",
+            "label": "CustomerName",
+            "type": 2,
+            "isRequired": true,
+            "multiSelect": true,
+            "quote": "'",
+            "delimiter": ",",
+            "query": "customer_map\r\n| where CustomerName notcontains \"MSSP\"\r\n| distinct CustomerName",
+            "value": [
+              "value::all"
+            ],
+            "typeSettings": {
+              "additionalResourceOptions": [
+                "value::all"
+              ],
+              "selectAllValue": "All",
+              "showDefault": false
+            },
+            "timeContext": {
+              "durationMs": 0
+            },
+            "timeContextFromParameter": "TimeRange",
+            "queryType": 0,
+            "resourceType": "microsoft.operationalinsights/workspaces"
+          },
+          {
+            "id": "4ae82a73-8bbc-4cd2-88b0-6e2b21e9cdd4",
+            "version": "KqlParameterItem/1.0",
+            "name": "Status",
+            "type": 2,
+            "isRequired": true,
+            "multiSelect": true,
+            "quote": "'",
+            "delimiter": ",",
+            "query": "cross_workspace_securityincidents\r\n| summarize Count = count() by Status\r\n| order by Count desc, Status asc\r\n| project Value = Status, Label = strcat(Status, ' - ', Count)",
+            "value": [
+              "value::all"
+            ],
+            "typeSettings": {
+              "additionalResourceOptions": [
+                "value::all"
+              ],
+              "selectAllValue": "All"
+            },
+            "queryType": 0,
+            "resourceType": "microsoft.operationalinsights/workspaces"
+          }
+        ],
+        "style": "pills",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces"
+      },
+      "name": "parameters - 3"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "cross_workspace_securityincidents\r\n| where TimeGenerated {TimeRange:query}\r\n| where '{Customer:lable}'==\"All\" or CustomerName in ({Customer})\r\n| summarize hint.strategy = shuffle arg_max(LastModifiedTime, *) by IncidentNumber\r\n| where Status == \"New\"\r\n| summarize IncidentCount=count() \r\n| project \"New Incidents\", IncidentCount",
+        "size": 0,
+        "title": "New Incidents - {TimeRange:Label}",
+        "color": "red",
+        "timeContext": {
+          "durationMs": 86400000
+        },
+        "timeContextFromParameter": "TimeRange",
+        "showRefreshButton": true,
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "graph",
+        "tileSettings": {
+          "showBorder": false,
+          "titleContent": {
+            "columnMatch": "Column1",
+            "formatter": 1
+          },
+          "leftContent": {
+            "columnMatch": "IncidentCount",
+            "formatter": 12,
+            "formatOptions": {
+              "palette": "auto"
+            },
+            "numberFormat": {
+              "unit": 17,
+              "options": {
+                "maximumSignificantDigits": 3,
+                "maximumFractionDigits": 2
+              }
+            }
+          }
+        },
+        "graphSettings": {
+          "type": 0,
+          "topContent": {
+            "columnMatch": "Column1",
+            "formatter": 1
+          },
+          "centerContent": {
+            "columnMatch": "IncidentCount",
+            "formatter": 1,
+            "numberFormat": {
+              "unit": 17,
+              "options": {
+                "maximumSignificantDigits": 3,
+                "maximumFractionDigits": 2
+              }
+            }
+          },
+          "nodeIdField": "Column1",
+          "sourceIdField": "Column1",
+          "targetIdField": "IncidentCount",
+          "graphOrientation": 2,
+          "showOrientationToggles": true,
+          "nodeSize": null,
+          "staticNodeSize": 100,
+          "colorSettings": {
+            "nodeColorField": "Column1",
+            "type": 3,
+            "thresholdsGrid": [
+              {
+                "operator": "==",
+                "thresholdValue": "New Incidents",
+                "representation": "redBright"
+              },
+              {
+                "operator": "Default",
+                "thresholdValue": null,
+                "representation": "blue"
+              }
+            ]
+          },
+          "hivesMargin": 5
+        }
+      },
+      "customWidth": "25",
+      "name": "New Incidents - {TimeRange:Label}"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "cross_workspace_securityincidents\r\n| where TimeGenerated {TimeRange:query}\r\n| where '{Customer:lable}'==\"All\" or CustomerName in ({Customer})\r\n| summarize hint.strategy = shuffle arg_max(LastModifiedTime, *) by IncidentNumber\r\n| where Status == \"Closed\"\r\n| summarize IncidentCount=count() \r\n| project \"Closed Incidents\", IncidentCount",
+        "size": 0,
+        "title": "Closed Incidents - {TimeRange:Label}",
+        "timeContext": {
+          "durationMs": 86400000
+        },
+        "timeContextFromParameter": "TimeRange",
+        "showRefreshButton": true,
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "graph",
+        "graphSettings": {
+          "type": 0,
+          "topContent": {
+            "columnMatch": "Column1",
+            "formatter": 1
+          },
+          "centerContent": {
+            "columnMatch": "IncidentCount",
+            "formatter": 1,
+            "numberFormat": {
+              "unit": 17,
+              "options": {
+                "maximumSignificantDigits": 3,
+                "maximumFractionDigits": 2
+              }
+            }
+          },
+          "nodeIdField": "Column1",
+          "sourceIdField": "Column1",
+          "targetIdField": "IncidentCount",
+          "graphOrientation": 3,
+          "showOrientationToggles": false,
+          "nodeSize": null,
+          "staticNodeSize": 100,
+          "colorSettings": {
+            "nodeColorField": "Column1",
+            "type": 3,
+            "thresholdsGrid": [
+              {
+                "operator": "==",
+                "thresholdValue": "Closed Incidents",
+                "representation": "blueDark"
+              },
+              {
+                "operator": "Default",
+                "thresholdValue": null,
+                "representation": "blue"
+              }
+            ]
+          },
+          "hivesMargin": 5
+        }
+      },
+      "customWidth": "25",
+      "name": "Closed Incidents - {TimeRange:Label}"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "cross_workspace_securityincidents\r\n| where TimeGenerated {TimeRange:query}\r\n| summarize hint.strategy = shuffle arg_max(LastModifiedTime, *) by IncidentNumber\r\n| where Status == \"Active\" or Status == \"New\"\r\n| summarize IncidentCount=count()\r\n| project \"Active Incidents\", IncidentCount",
+        "size": 0,
+        "title": "Active Incidents - {TimeRange:Label}",
+        "timeContext": {
+          "durationMs": 86400000
+        },
+        "timeContextFromParameter": "TimeRange",
+        "showRefreshButton": true,
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "graph",
+        "graphSettings": {
+          "type": 0,
+          "topContent": {
+            "columnMatch": "Column1",
+            "formatter": 1
+          },
+          "centerContent": {
+            "columnMatch": "IncidentCount",
+            "formatter": 1,
+            "numberFormat": {
+              "unit": 17,
+              "options": {
+                "maximumSignificantDigits": 3,
+                "maximumFractionDigits": 2
+              }
+            }
+          },
+          "nodeIdField": "Column1",
+          "sourceIdField": "Column1",
+          "targetIdField": "IncidentCount",
+          "graphOrientation": 3,
+          "showOrientationToggles": false,
+          "nodeSize": null,
+          "staticNodeSize": 100,
+          "colorSettings": {
+            "nodeColorField": "Column1",
+            "type": 3,
+            "thresholdsGrid": [
+              {
+                "operator": "==",
+                "thresholdValue": "Active Incidents",
+                "representation": "green"
+              },
+              {
+                "operator": "Default",
+                "thresholdValue": null,
+                "representation": "blue"
+              }
+            ]
+          },
+          "hivesMargin": 5
+        }
+      },
+      "customWidth": "25",
+      "name": "Active Incidents - {TimeRange:Label}"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "cross_workspace_securityincidents\r\n| where TimeGenerated {TimeRange:query}\r\n| where '{Customer:lable}'==\"All\" or CustomerName in ({Customer})\r\n| summarize hint.strategy = shuffle arg_max(LastModifiedTime, *) by IncidentNumber\r\n| where Status in (\"New\", \"Active\", \"Closed\")\r\n| summarize IncidentCount=count() \r\n| project \"Total Incidents\", IncidentCount\r\n",
+        "size": 0,
+        "title": "All Incidents - {TimeRange:Label}",
+        "timeContext": {
+          "durationMs": 86400000
+        },
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "graph",
+        "graphSettings": {
+          "type": 0,
+          "topContent": {
+            "columnMatch": "Column1",
+            "formatter": 1
+          },
+          "centerContent": {
+            "columnMatch": "IncidentCount",
+            "formatter": 1,
+            "numberFormat": {
+              "unit": 17,
+              "options": {
+                "maximumSignificantDigits": 3,
+                "maximumFractionDigits": 2
+              }
+            }
+          },
+          "nodeIdField": "Column1",
+          "sourceIdField": "Column1",
+          "targetIdField": "IncidentCount",
+          "graphOrientation": 3,
+          "showOrientationToggles": false,
+          "nodeSize": null,
+          "staticNodeSize": 100,
+          "colorSettings": {
+            "nodeColorField": "Column1",
+            "type": 3,
+            "thresholdsGrid": [
+              {
+                "operator": "==",
+                "thresholdValue": "Total Incidents",
+                "representation": "yellow"
+              },
+              {
+                "operator": "Default",
+                "thresholdValue": null,
+                "representation": "blue"
+              }
+            ]
+          },
+          "hivesMargin": 5
+        }
+      },
+      "customWidth": "25",
+      "name": "All Incidents - {TimeRange:Label}"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "cross_workspace_securityincidents\r\n| where '{Customer:lable}'==\"All\" or CustomerName in ({Customer})\r\n| summarize CustomerCount=count() by strcat(CustomerName), bin_at(TimeGenerated, 5m, now())",
+        "size": 0,
+        "title": "Incidents TimeLine per Customer - {TimeRange:label} ",
+        "timeContext": {
+          "durationMs": 86400000
+        },
+        "timeContextFromParameter": "TimeRange",
+        "timeBrushParameterName": "Time",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "linechart",
+        "tileSettings": {
+          "showBorder": false,
+          "titleContent": {
+            "columnMatch": "Column1",
+            "formatter": 1
+          },
+          "leftContent": {
+            "columnMatch": "CustomerCount",
+            "formatter": 12,
+            "formatOptions": {
+              "palette": "auto"
+            },
+            "numberFormat": {
+              "unit": 17,
+              "options": {
+                "maximumSignificantDigits": 3,
+                "maximumFractionDigits": 2
+              }
+            }
+          }
+        },
+        "chartSettings": {
+          "seriesLabelSettings": [
+            {
+              "seriesName": "WD",
+              "color": "red"
+            },
+            {
+              "seriesName": "OSI",
+              "color": "blue"
+            },
+            {
+              "seriesName": "GekTerna",
+              "color": "green"
+            },
+            {
+              "seriesName": "Realize",
+              "color": "greenDark"
+            }
+          ]
+        }
+      },
+      "name": "Incidents TimeLine per Customer - {TimeRange:label} "
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "cross_workspace_securityincidents\r\n| where '{Customer:lable}'==\"All\" or CustomerName in ({Customer})\r\n| where '{Status:lable}'==\"All\" or Status in ({Status})\r\n| summarize arg_max(TimeGenerated,*) by tostring(IncidentNumber)\r\n| extend Alerts = extract(\"\\\\[(.*?)\\\\]\", 1, tostring(AlertIds))\r\n| extend AlertsProduct = tostring(parse_json(tostring(AdditionalData.alertProductNames))[0])\r\n| mv-expand AlertIds to typeof(string)\r\n| join \r\n(\r\n    cross_workspace_securityalerts\r\n    | extend AlertEntities = parse_json(Entities)\r\n    | mv-expand AlertEntities\r\n    | extend sortOrder = case \r\n      ( \r\n        AlertEntities.Type == \"account\",1, AlertEntities.Type == \"host\",2, AlertEntities.Type == \"ip\",3, AlertEntities.Type == \"url\",4, 99\r\n      ) \r\n    | order by sortOrder asc    \r\n) on $left.AlertIds == $right.SystemAlertId\r\n| summarize AlertCount=dcount(AlertIds), entityList=make_set(tostring(AlertEntities.Type)) by TimeGenerated,LastModifiedTime,CustomerName,IncidentNumber, ProviderName ,Status, Severity, Title, AlertsProduct,Alerts, IncidentUrl, Owner=tostring(Owner.userPrincipalName) , Tactics =tostring(AdditionalData.tactics)\r\n| extend EntityTypes=entityList\r\n| extend IncidentProvider = ProviderName\r\n| extend AlertProvider = AlertsProduct\r\n| project CustomerName,TimeGenerated,LastModifiedTime,IncidentNumber, Title, Severity, Status, IncidentProvider,AlertProvider,IncidentUrl, AlertCount, Alerts\r\n| order by TimeGenerated desc",
+        "size": 2,
+        "showAnalytics": true,
+        "title": "Incidents Overview {Time}",
+        "timeContext": {
+          "durationMs": 0
+        },
+        "timeContextFromParameter": "Time",
+        "showRefreshButton": true,
+        "exportedParameters": [
+          {
+            "fieldName": "Alerts",
+            "parameterName": "Alerts",
+            "parameterType": 1
+          },
+          {
+            "fieldName": "IncidentNumber",
+            "parameterName": "INexport",
+            "parameterType": 1
+          }
+        ],
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "gridSettings": {
+          "formatters": [
+            {
+              "columnMatch": "IncidentNumber",
+              "formatter": 0,
+              "formatOptions": {
+                "customColumnWidthSetting": "10.8571ch"
+              }
+            },
+            {
+              "columnMatch": "Title",
+              "formatter": 0,
+              "formatOptions": {
+                "customColumnWidthSetting": "39.7143ch"
+              }
+            },
+            {
+              "columnMatch": "Severity",
+              "formatter": 18,
+              "formatOptions": {
+                "thresholdsOptions": "icons",
+                "thresholdsGrid": [
+                  {
+                    "operator": "==",
+                    "thresholdValue": "Informational",
+                    "representation": "1",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "==",
+                    "thresholdValue": "Low",
+                    "representation": "success",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "==",
+                    "thresholdValue": "Medium",
+                    "representation": "2",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "==",
+                    "thresholdValue": "High",
+                    "representation": "3",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "Default",
+                    "thresholdValue": null,
+                    "representation": "Blank",
+                    "text": "{0}{1}"
+                  }
+                ]
+              }
+            },
+            {
+              "columnMatch": "Status",
+              "formatter": 18,
+              "formatOptions": {
+                "thresholdsOptions": "colors",
+                "thresholdsGrid": [
+                  {
+                    "operator": "==",
+                    "thresholdValue": "New",
+                    "representation": "red",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "==",
+                    "thresholdValue": "Closed",
+                    "representation": "blueDark",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "==",
+                    "thresholdValue": "Active",
+                    "representation": "orange",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "Default",
+                    "thresholdValue": null,
+                    "text": "{0}{1}"
+                  }
+                ]
+              }
+            },
+            {
+              "columnMatch": "ProviderName",
+              "formatter": 0,
+              "formatOptions": {
+                "customColumnWidthSetting": "25ch"
+              }
+            },
+            {
+              "columnMatch": "IncidentUrl",
+              "formatter": 7,
+              "formatOptions": {
+                "linkTarget": "Url",
+                "linkLabel": "Open Incident",
+                "linkIsContextBlade": false,
+                "customColumnWidthSetting": "13ch"
+              }
+            },
+            {
+              "columnMatch": "AlertCount",
+              "formatter": 18,
+              "formatOptions": {
+                "thresholdsOptions": "colors",
+                "thresholdsGrid": [
+                  {
+                    "operator": ">",
+                    "thresholdValue": "2",
+                    "representation": "red",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "Default",
+                    "thresholdValue": null,
+                    "text": "{0}{1}"
+                  }
+                ]
+              }
+            },
+            {
+              "columnMatch": "Alerts",
+              "formatter": 18,
+              "formatOptions": {
+                "thresholdsOptions": "colors",
+                "thresholdsGrid": [
+                  {
+                    "operator": ">=",
+                    "thresholdValue": "3",
+                    "representation": "orange",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "Default",
+                    "thresholdValue": null,
+                    "text": "{0}{1}"
+                  }
+                ]
+              }
+            }
+          ],
+          "rowLimit": 1000,
+          "filter": true
+        },
+        "sortBy": []
+      },
+      "name": "Incidents Overview - {Time}"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "cross_workspace_securityalerts\r\n| where SystemAlertId in ({Alerts})\r\n| summarize by CustomerName,EndTime, AlertName, ProviderName, AlertSeverity, Status, LinkIncident1, Tactics, SystemAlertId\r\n| sort by EndTime desc",
+        "size": 0,
+        "title": "Involved Security Alerts of Incident: \"{INexport}\"",
+        "timeContext": {
+          "durationMs": 0
+        },
+        "timeContextFromParameter": "Time",
+        "showRefreshButton": true,
+        "exportedParameters": [
+          {
+            "fieldName": "SystemAlertId",
+            "parameterName": "AlertID",
+            "parameterType": 1
+          },
+          {
+            "fieldName": "AlertName",
+            "parameterName": "AlertName",
+            "parameterType": 1
+          }
+        ],
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "gridSettings": {
+          "formatters": [
+            {
+              "columnMatch": "AlertSeverity",
+              "formatter": 18,
+              "formatOptions": {
+                "thresholdsOptions": "icons",
+                "thresholdsGrid": [
+                  {
+                    "operator": "==",
+                    "thresholdValue": "Medium",
+                    "representation": "2",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "==",
+                    "thresholdValue": "Low",
+                    "representation": "success",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "==",
+                    "thresholdValue": "High",
+                    "representation": "3",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "==",
+                    "thresholdValue": "Informational",
+                    "representation": "1",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "Default",
+                    "thresholdValue": null,
+                    "representation": "Blank",
+                    "text": "{0}{1}"
+                  }
+                ]
+              }
+            },
+            {
+              "columnMatch": "Status",
+              "formatter": 18,
+              "formatOptions": {
+                "thresholdsOptions": "icons",
+                "thresholdsGrid": [
+                  {
+                    "operator": "==",
+                    "thresholdValue": "New",
+                    "representation": "Fired",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "==",
+                    "thresholdValue": "Resolved",
+                    "representation": "Resolved",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "==",
+                    "thresholdValue": "InProgress",
+                    "representation": "pending",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "==",
+                    "thresholdValue": "Dismissed",
+                    "representation": "failed",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "Default",
+                    "thresholdValue": null,
+                    "representation": "Blank",
+                    "text": "{0}{1}"
+                  }
+                ]
+              }
+            },
+            {
+              "columnMatch": "LinkIncident1",
+              "formatter": 7,
+              "formatOptions": {
+                "linkTarget": "Url",
+                "linkLabel": "Open Alert"
+              }
+            }
+          ],
+          "filter": true,
+          "labelSettings": [
+            {
+              "columnId": "CustomerName"
+            },
+            {
+              "columnId": "EndTime"
+            },
+            {
+              "columnId": "AlertName"
+            },
+            {
+              "columnId": "ProviderName"
+            },
+            {
+              "columnId": "AlertSeverity"
+            },
+            {
+              "columnId": "Status"
+            },
+            {
+              "columnId": "LinkIncident1",
+              "label": "AlertLink"
+            },
+            {
+              "columnId": "Tactics"
+            },
+            {
+              "columnId": "SystemAlertId"
+            }
+          ]
+        }
+      },
+      "customWidth": "70",
+      "name": "Involved Security Alerts of Incident: \"{INexport}\""
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let AlertEntities = cross_workspace_securityalerts\r\n| where SystemAlertId == \"{AlertID}\"\r\n| where TimeGenerated {TimeRange}\r\n| extend AlertEntities = parse_json(Entities)\r\n| mv-expand AlertEntities\r\n| where isnotempty(AlertEntities)\r\n| project CustomerName, AlertEntities;\r\nlet filehashEntities = AlertEntities\r\n| where AlertEntities.Type =~ \"filehash\"\r\n| extend Entity = tostring(AlertEntities.Value)\r\n| extend EntityType = strcat(tostring(AlertEntities.Type), \"-\", tostring(AlertEntities.Algorithm))\r\n| distinct Entity, EntityType;\r\nlet fileEntities = AlertEntities\r\n| where AlertEntities.Type == \"file\"\r\n| extend Entity = strcat(tostring(AlertEntities.Directory), \"\\\\\", tostring(AlertEntities.Name))\r\n| extend EntityType = tostring(AlertEntities.Type)\r\n| distinct CustomerName, Entity, EntityType;\r\nlet nestedFileHashEntities = AlertEntities\r\n| where AlertEntities.Type =~ \"file\"\r\n| where isnotempty(AlertEntities.FileHashes)\r\n| mv-expand hashes=AlertEntities.FileHashes\r\n| extend Entity = tostring(hashes.Value)\r\n| extend EntityType = strcat(tostring(hashes.Type), \"-\", tostring(hashes.Algorithm))\r\n| distinct CustomerName, Entity, EntityType;\r\nlet IPEntities = AlertEntities\r\n| where AlertEntities.Type == \"ip\"\r\n| extend Entity = tostring(AlertEntities.Address)\r\n| extend EntityType = tostring(AlertEntities.Type)\r\n| distinct CustomerName, Entity, EntityType;\r\nlet AccountEntities = AlertEntities\r\n| where AlertEntities.Type == \"account\"\r\n| extend Entity = iff(isnotempty(AlertEntities.UPNSuffix), strcat(AlertEntities.Name, '@', AlertEntities.UPNSuffix), AlertEntities.Name)\r\n| extend EntityType = tostring(AlertEntities.Type)\r\n| distinct CustomerName, Entity, EntityType;\r\nlet HostEntities = AlertEntities\r\n| where AlertEntities.Type == \"host\"\r\n| extend Entity = iff(isnotempty(AlertEntities.DnsDomain), strcat(AlertEntities.HostName, '.', AlertEntities.DnsDomain), AlertEntities.HostName)\r\n| extend EntityType = tostring(AlertEntities.Type)\r\n| distinct CustomerName, Entity, EntityType;\r\nlet appEntities = AlertEntities\r\n| where AlertEntities.Type == \"cloud-application\"\r\n| extend Entity = tostring(AlertEntities.Name)\r\n| extend EntityType = tostring(AlertEntities.Type)\r\n| distinct CustomerName, Entity, EntityType;\r\nlet azresEntities = AlertEntities\r\n| where AlertEntities.Type == \"azure-resource\"\r\n| extend Entity = tostring(AlertEntities.ResourceId)\r\n| extend EntityType = tostring(AlertEntities.Type)\r\n| distinct Entity, EntityType;\r\nlet malwareEntities = AlertEntities\r\n| where AlertEntities.Type == \"malware\"\r\n| extend Entity = tostring(AlertEntities.Name)\r\n| extend EntityType = tostring(AlertEntities.Type)\r\n| distinct Entity, EntityType;\r\nlet domResIdEntities = AlertEntities\r\n| where AlertEntities.Type == \"DomainResourceIdentifier\"\r\n| extend Entity = tostring(AlertEntities.ResourceName)\r\n| extend EntityType = tostring(AlertEntities.Type)\r\n| distinct Entity, EntityType;\r\nlet dnsEntities = AlertEntities\r\n| where AlertEntities.Type == \"dns\"\r\n| extend Entity = tostring(AlertEntities.DomainName)\r\n| extend EntityType = tostring(AlertEntities.Type)\r\n| distinct CustomerName, Entity, EntityType;\r\nAlertEntities\r\n| where AlertEntities.Type == \"url\"\r\n| extend Entity = tostring(AlertEntities.Url)\r\n| extend EntityType = tostring(AlertEntities.Type)\r\n| distinct CustomerName, Entity, EntityType\r\n| union IPEntities, AccountEntities, HostEntities, filehashEntities, fileEntities, nestedFileHashEntities, appEntities, azresEntities, malwareEntities, domResIdEntities, dnsEntities\r\n| where isnotempty(Entity)\r\n| order by CustomerName,EntityType asc",
+        "size": 0,
+        "title": "Involved Entities in Alert: \"{AlertName}\"",
+        "noDataMessage": "Select an alert to show Entities",
+        "noDataMessageStyle": 2,
+        "timeContext": {
+          "durationMs": 0
+        },
+        "timeContextFromParameter": "Time",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "gridSettings": {
+          "formatters": [
+            {
+              "columnMatch": "EntityType",
+              "formatter": 18,
+              "formatOptions": {
+                "thresholdsOptions": "colors",
+                "thresholdsGrid": [
+                  {
+                    "operator": "==",
+                    "thresholdValue": "account",
+                    "representation": "red",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "==",
+                    "thresholdValue": "ip",
+                    "representation": "green",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "==",
+                    "thresholdValue": "dns",
+                    "representation": "orange",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "==",
+                    "thresholdValue": "url",
+                    "representation": "magenta",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "==",
+                    "thresholdValue": "mailbox",
+                    "representation": "blue",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "==",
+                    "thresholdValue": "host",
+                    "representation": "grayBlue",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "contains",
+                    "thresholdValue": "file",
+                    "representation": "greenDark",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "==",
+                    "thresholdValue": "cloud-application",
+                    "representation": "turquoise",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "Default",
+                    "thresholdValue": null,
+                    "text": "{0}{1}"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "customWidth": "30",
+      "name": "Involved Entities in Alert: \"{AlertName}\""
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "cross_workspace_securityincidents\r\n| extend AlertsProduct = tostring(parse_json(tostring(AdditionalData.alertProductNames))[0])\r\n| where '{Customer:lable}'==\"All\" or CustomerName in ({Customer})\r\n| where '{Status:lable}'==\"All\" or Status in ({Status})\r\n| summarize count() by AlertsProduct, bin(TimeGenerated, 5m)",
+        "size": 0,
+        "title": "Incidents Over Time by Alert Product - {TimeRange:label} ",
+        "timeContext": {
+          "durationMs": 0
+        },
+        "timeContextFromParameter": "Time",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "barchart",
+        "tileSettings": {
+          "titleContent": {
+            "columnMatch": "Column1",
+            "formatter": 1
+          },
+          "leftContent": {
+            "columnMatch": "count_",
+            "formatter": 12,
+            "formatOptions": {
+              "palette": "auto"
+            },
+            "numberFormat": {
+              "unit": 17,
+              "options": {
+                "style": "decimal",
+                "maximumFractionDigits": 2,
+                "maximumSignificantDigits": 3
+              }
+            }
+          },
+          "rightContent": {
+            "columnMatch": "IncidentCount"
+          },
+          "showBorder": true,
+          "sortCriteriaField": "IncidentCount",
+          "size": "full"
+        }
+      },
+      "customWidth": "100",
+      "name": "Incidents Over Time by Alert Product - {TimeRange:label} ",
+      "styleSettings": {
+        "showBorder": true
+      }
+    }
+  ],
+  "fallbackResourceIds": [
+    "/subscriptions/6e5d5798-a0c1-4a69-8ec7-d5f43295a74e/resourcegroups/obrela-mssp/providers/microsoft.operationalinsights/workspaces/obrela-mssp"
+  ],
+  "fromTemplateId": "sentinel-UserWorkbook",
+  "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json"
+}
