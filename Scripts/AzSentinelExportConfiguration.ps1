@@ -15,7 +15,7 @@ param(
 Install-Module AzSentinel -Scope CurrentUser -Force
 Import-Module AzSentinel
 
-# Connect to Azure AD 
+# Connect to Azure Active Directory
 Connect-AzAccount
 
 # Select Subscription
