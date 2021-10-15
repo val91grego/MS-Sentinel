@@ -11,7 +11,7 @@ param(
 [Parameter(Mandatory=$true)]$outputfolder
 )
 
-# Add AzSentinel Module
+# Add AzSentinel Modules
 Install-Module AzSentinel -Scope CurrentUser -Force
 Import-Module AzSentinel
 
