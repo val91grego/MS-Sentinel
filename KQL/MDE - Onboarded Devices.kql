@@ -1,0 +1,6 @@
+//This query returns the Number of Onboarded Devices
+DeviceInfo
+| where Timestamp >=ago(30d)
+| where OnboardingStatus == 'Onboarded'
+| summarize by DeviceName,MachineGroup
+| sort by MachineGroup
