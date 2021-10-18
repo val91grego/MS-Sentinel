@@ -1,0 +1,15 @@
+EmailAttachmentInfo
+| where Timestamp >= ago(30d)
+| where isnotempty(ThreatNames)
+| project
+    Timestamp,
+    SenderFromAddress,
+    SenderDisplayName,
+    RecipientEmailAddress,
+    FileName,
+    FileType,
+    ThreatNames,
+    ThreatTypes,
+    DetectionMethods,
+    NetworkMessageId
+| order by Timestamp
