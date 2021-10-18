@@ -1,0 +1,9 @@
+// This query returns the number of users logged in onboarded devices
+DeviceInfo
+| where Timestamp >ago(60d)
+| summarize by DeviceName, LoggedOnUsers
+| extend MultiUsers = parsejson(LoggedOnUsers)
+| mvexpand MultiUsers
+| extend username=MultiUsers["UserName"]
+| distinct tostring(username)
+| summarize MicrosoftDefenderforEndpoint_Users=sum(1)
