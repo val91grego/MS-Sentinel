@@ -1,0 +1,13 @@
+//Related with Security Alerts from OATP with DisplayName contain "removed after delivery"
+EmailPostDeliveryEvents
+| where Timestamp >= ago(30d)
+| where ActionType has "ZAP"
+| order by Timestamp
+| project
+    Timestamp,
+    RecipientEmailAddress,
+    Action,
+    ActionResult,
+    ActionType,
+    NetworkMessageId,
+    ReportId
