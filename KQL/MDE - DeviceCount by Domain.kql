@@ -1,0 +1,10 @@
+//This query returns the number of onboarded Devices per Domain
+DeviceInfo
+| where Timestamp >=ago(30d)
+| where isnotempty(OSPlatform)
+| summarize arg_max(Timestamp, DeviceName) by DeviceId
+| extend DeviceMachineName = split(DeviceName, '.')[0]
+| extend DeviceDomain = substring(DeviceName, strlen(DeviceMachineName) + 1, strlen(DeviceName) - strlen(DeviceMachineName) - 1)
+| where isnotempty(DeviceDomain)
+| summarize DevicesCount = count() by DeviceDomain
+| sort by DevicesCount
