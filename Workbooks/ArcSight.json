@@ -1,277 +1,218 @@
 {
-  "contentVersion": "1.0.0.0",
-  "parameters": {
-    "workbookDisplayName": {
-      "type": "string",
-      "defaultValue": "ArcSight OLD Correlation Overview",
-      "metadata": {
-        "description": "The friendly name for the workbook that is used in the Gallery or Saved List.  This name must be unique within a resource group."
-      }
-    },
-    "workbookType": {
-      "type": "string",
-      "defaultValue": "sentinel",
-      "metadata": {
-        "description": "The gallery that the workbook will been shown under. Supported values include workbook, tsg, etc. Usually, this is 'workbook'"
-      }
-    },
-    "workbookSourceId": {
-      "type": "string",
-      "defaultValue": "/subscriptions/6e5d5798-a0c1-4a69-8ec7-d5f43295a74e/resourcegroups/obrela-mssp/providers/microsoft.operationalinsights/workspaces/obrela-mssp",
-      "metadata": {
-        "description": "The id of resource instance to which the workbook will be associated"
-      }
-    },
-    "workbookId": {
-      "type": "string",
-      "defaultValue": "[newGuid()]",
-      "metadata": {
-        "description": "The unique guid for this workbook instance"
-      }
-    }
-  },
-  "variables": {
-    "workbookContent": {
-      "version": "Notebook/1.0",
-      "items": [
-        {
-          "type": 9,
-          "content": {
+  "version": "Notebook/1.0",
+  "items": [
+    {
+      "type": 9,
+      "content": {
+        "version": "KqlParameterItem/1.0",
+        "parameters": [
+          {
+            "id": "11cf6137-0a4a-4b35-86c2-3b9ea173e5fd",
             "version": "KqlParameterItem/1.0",
-            "parameters": [
-              {
-                "id": "11cf6137-0a4a-4b35-86c2-3b9ea173e5fd",
-                "version": "KqlParameterItem/1.0",
-                "name": "TimeRange",
-                "type": 4,
-                "isRequired": true,
-                "value": {
+            "name": "TimeRange",
+            "type": 4,
+            "isRequired": true,
+            "value": {
+              "durationMs": 14400000
+            },
+            "typeSettings": {
+              "selectableValues": [
+                {
+                  "durationMs": 1800000
+                },
+                {
+                  "durationMs": 3600000
+                },
+                {
                   "durationMs": 14400000
                 },
-                "typeSettings": {
-                  "selectableValues": [
-                    {
-                      "durationMs": 1800000
-                    },
-                    {
-                      "durationMs": 3600000
-                    },
-                    {
-                      "durationMs": 14400000
-                    },
-                    {
-                      "durationMs": 86400000
-                    },
-                    {
-                      "durationMs": 604800000
-                    }
-                  ],
-                  "allowCustom": true
-                },
-                "timeContext": {
-                  "durationMs": 86400000
-                }
-              },
-              {
-                "id": "943555b5-a29a-4e5c-b855-dbd1a7525c1e",
-                "version": "KqlParameterItem/1.0",
-                "name": "Customer",
-                "type": 2,
-                "isRequired": true,
-                "multiSelect": true,
-                "quote": "'",
-                "delimiter": ",",
-                "query": "cross_workspace_cef_correlation\r\n| distinct tostring(CustomerName)",
-                "value": [
-                  "value::all"
-                ],
-                "typeSettings": {
-                  "additionalResourceOptions": [
-                    "value::all"
-                  ]
-                },
-                "timeContext": {
-                  "durationMs": 86400000
-                },
-                "queryType": 0,
-                "resourceType": "microsoft.operationalinsights/workspaces"
-              }
-            ],
-            "style": "pills",
-            "queryType": 0,
-            "resourceType": "microsoft.operationalinsights/workspaces"
-          },
-          "name": "parameters - 2"
-        },
-        {
-          "type": 3,
-          "content": {
-            "version": "KqlItem/1.0",
-            "query": "cross_workspace_cef_correlation\r\n| where CustomerName in ({Customer})\r\n| where fileType_s!=\"Agent\"  and deviceProduct_s!=\"Logger\" and deviceCustomString1_s !endswith \"Case Management\"\r\n| extend mytime = unixtime_microseconds_todatetime(tolong(strcat(managerReceiptTime_s,\"000\")))\r\n| summarize count() by bin(mytime, 5m),tostring(CustomerName)",
-            "size": 0,
-            "title": "Correlation Timechart per Customer (Top 10)",
-            "timeContext": {
-              "durationMs": 14400000
-            },
-            "timeContextFromParameter": "TimeRange",
-            "queryType": 0,
-            "resourceType": "microsoft.operationalinsights/workspaces",
-            "visualization": "timechart",
-            "chartSettings": {
-              "xAxis": "mytime",
-              "group": "CustomerName",
-              "createOtherGroup": 10,
-              "showLegend": true
-            }
-          },
-          "name": "query - 6"
-        },
-        {
-          "type": 3,
-          "content": {
-            "version": "KqlItem/1.0",
-            "query": "cross_workspace_cef_correlation\r\n| where CustomerName in ({Customer})\r\n| where fileType_s!=\"Agent\"  and deviceProduct_s!=\"Logger\" and deviceCustomString1_s !endswith \"Case Management\"\r\n| extend mytime = unixtime_microseconds_todatetime(tolong(strcat(managerReceiptTime_s,\"000\")))\r\n| extend baseEventCount = iff(isempty(baseEventCount_s),1,toint(baseEventCount_s))\r\n| summarize sum(baseEventCount) by bin(mytime, 5m),tostring(CustomerName)",
-            "size": 0,
-            "title": "Correlated Timechart per Customer (Top 10)",
-            "timeContext": {
-              "durationMs": 14400000
-            },
-            "timeContextFromParameter": "TimeRange",
-            "queryType": 0,
-            "resourceType": "microsoft.operationalinsights/workspaces",
-            "visualization": "timechart",
-            "chartSettings": {
-              "xAxis": "mytime",
-              "group": "CustomerName",
-              "createOtherGroup": 10,
-              "showLegend": true
-            }
-          },
-          "name": "query - 6 - Copy"
-        },
-        {
-          "type": 3,
-          "content": {
-            "version": "KqlItem/1.0",
-            "query": "cross_workspace_cef_correlation\r\n| where CustomerName in ({Customer})\r\n| where fileType_s!=\"Agent\"  and deviceProduct_s!=\"Logger\" and deviceCustomString1_s !endswith \"Case Management\"\r\n| extend ruleName1=substring(extract('<Resource URI=\"(/[^/]*)*\" ID=',1,deviceCustomString2_s),1)\r\n| extend ruleName = iff(isempty(ruleName1),fileName_s,ruleName1)\r\n| extend join_name = strcat(CustomerName,\" - \", ruleName)\r\n| extend mytime = unixtime_microseconds_todatetime(tolong(strcat(managerReceiptTime_s,\"000\")))\r\n| summarize count() by bin(mytime, 5m),join_name",
-            "size": 1,
-            "title": "Correlation Timechart per Rule/Customer (Top 10)",
-            "timeContext": {
-              "durationMs": 14400000
-            },
-            "timeContextFromParameter": "TimeRange",
-            "queryType": 0,
-            "resourceType": "microsoft.operationalinsights/workspaces",
-            "visualization": "timechart",
-            "chartSettings": {
-              "xAxis": "mytime",
-              "group": "join_name",
-              "createOtherGroup": 10,
-              "showLegend": true
-            }
-          },
-          "name": "Rule-Timechart-Correlation"
-        },
-        {
-          "type": 3,
-          "content": {
-            "version": "KqlItem/1.0",
-            "query": "cross_workspace_cef_correlation\r\n| where CustomerName in ({Customer})\r\n| where fileType_s!=\"Agent\"  and deviceProduct_s!=\"Logger\" and deviceCustomString1_s !endswith \"Case Management\"\r\n| extend ruleName1=substring(extract('<Resource URI=\"(/[^/]*)*\" ID=',1,deviceCustomString2_s),1)\r\n| extend ruleName = iff(isempty(ruleName1),fileName_s,ruleName1)\r\n| extend join_name = strcat(CustomerName,\" - \", ruleName)\r\n| extend baseEventCount = iff(isempty(baseEventCount_s),1,toint(baseEventCount_s))\r\n| extend mytime = unixtime_microseconds_todatetime(tolong(strcat(managerReceiptTime_s,\"000\")))\r\n| summarize sum(baseEventCount) by bin(mytime, 5m),join_name",
-            "size": 1,
-            "title": "Correlated Timechart per Rule/Customer (Top 10)",
-            "timeContext": {
-              "durationMs": 14400000
-            },
-            "timeContextFromParameter": "TimeRange",
-            "queryType": 0,
-            "resourceType": "microsoft.operationalinsights/workspaces",
-            "visualization": "timechart",
-            "chartSettings": {
-              "xAxis": "mytime",
-              "group": "join_name",
-              "createOtherGroup": 10,
-              "showLegend": true
-            }
-          },
-          "name": "Rule-Timechart-Correlated"
-        },
-        {
-          "type": 3,
-          "content": {
-            "version": "KqlItem/1.0",
-            "query": "cross_workspace_cef_correlation\n| where CustomerName in ({Customer})\n| where fileType_s!=\"Agent\"  and deviceProduct_s!=\"Logger\" and deviceCustomString1_s !endswith \"Case Management\"\n| extend basePackage1=extract('<Resource URI=\"/All Rules/Real-time Rules/([^/]*)/',1,deviceCustomString2_s)\n| extend secondPackage1=extract('<Resource URI=\"/All Rules/Real-time Rules/([^/]*)/([^/]*)/',2,deviceCustomString2_s)\n| extend thirdPackage1=extract('<Resource URI=\"/All Rules/Real-time Rules/([^/]*)/([^/]*)/([^/\"]*)/',3,deviceCustomString2_s)\n| extend ruleName1=substring(extract('<Resource URI=\"(/[^/]*)*\" ID=',1,deviceCustomString2_s),1)\n| extend basePackage2=extract('/All Rules/Real-time Rules/([^/]*)/',1,filePath_s)\n| extend secondPackage2=extract('/All Rules/Real-time Rules/([^/]*)/([^/]*)/',2,filePath_s)\n| extend thirdPackage2=extract('/All Rules/Real-time Rules/([^/]*)/([^/]*)/([^/]*)/',3,filePath_s)\n| extend basePackage=iff(isempty(basePackage1),basePackage2,basePackage1)\n| extend secondPackage=iff(isempty(secondPackage1),secondPackage2,secondPackage1)\n| extend thirdPackage=iff(isempty(thirdPackage1),thirdPackage2,thirdPackage1)\n| extend ruleName = iff(isempty(ruleName1),fileName_s,ruleName1)\n| extend baseEventCount = iff(isempty(baseEventCount_s),1,toint(baseEventCount_s))\n| summarize correlation_count=count(), correlated_count=sum(baseEventCount) by ruleName, basePackage, secondPackage, thirdPackage\n| sort by correlation_count desc\n| limit 100",
-            "size": 1,
-            "title": "Top Correlation Rules fired (Top 100)",
-            "timeContext": {
-              "durationMs": 14400000
-            },
-            "timeContextFromParameter": "TimeRange",
-            "queryType": 0,
-            "resourceType": "microsoft.operationalinsights/workspaces",
-            "sortBy": []
-          },
-          "name": "query - 2"
-        },
-        {
-          "type": 3,
-          "content": {
-            "version": "KqlItem/1.0",
-            "query": "cross_workspace_cef_correlation\n| where CustomerName in ({Customer})\n| where fileType_s!=\"Agent\"  and deviceProduct_s!=\"Logger\" and deviceCustomString1_s !endswith \"Case Management\"\n| extend basePackage1=extract('<Resource URI=\"/All Rules/Real-time Rules/([^/]*)/',1,deviceCustomString2_s)\n| extend secondPackage1=extract('<Resource URI=\"/All Rules/Real-time Rules/([^/]*)/([^/]*)/',2,deviceCustomString2_s)\n| extend thirdPackage1=extract('<Resource URI=\"/All Rules/Real-time Rules/([^/]*)/([^/]*)/([^/\"]*)/',3,deviceCustomString2_s)\n| extend ruleName1=substring(extract('<Resource URI=\"(/[^/]*)*\" ID=',1,deviceCustomString2_s),1)\n| extend basePackage2=extract('/All Rules/Real-time Rules/([^/]*)/',1,filePath_s)\n| extend secondPackage2=extract('/All Rules/Real-time Rules/([^/]*)/([^/]*)/',2,filePath_s)\n| extend thirdPackage2=extract('/All Rules/Real-time Rules/([^/]*)/([^/]*)/([^/]*)/',3,filePath_s)\n| extend basePackage=iff(isempty(basePackage1),basePackage2,basePackage1)\n| extend secondPackage=iff(isempty(secondPackage1),secondPackage2,secondPackage1)\n| extend thirdPackage=iff(isempty(thirdPackage1),thirdPackage2,thirdPackage1)\n| extend ruleName = iff(isempty(ruleName1),fileName_s,ruleName1)\n| extend baseEventCount = iff(isempty(baseEventCount_s),1,toint(baseEventCount_s))\n| summarize correlation_count=count(), correlated_count=sum(baseEventCount) by tostring(CustomerName),ruleName, basePackage, secondPackage, thirdPackage\n| sort by correlation_count desc\n| limit 100",
-            "size": 1,
-            "title": "Top Correlation Rules fired per Customer (Top 100)",
-            "timeContext": {
-              "durationMs": 14400000
-            },
-            "timeContextFromParameter": "TimeRange",
-            "queryType": 0,
-            "resourceType": "microsoft.operationalinsights/workspaces",
-            "gridSettings": {
-              "sortBy": [
                 {
-                  "itemKey": "correlated_count",
-                  "sortOrder": 2
+                  "durationMs": 86400000
+                },
+                {
+                  "durationMs": 604800000
                 }
+              ],
+              "allowCustom": true
+            },
+            "timeContext": {
+              "durationMs": 86400000
+            }
+          },
+          {
+            "id": "943555b5-a29a-4e5c-b855-dbd1a7525c1e",
+            "version": "KqlParameterItem/1.0",
+            "name": "Customer",
+            "type": 2,
+            "isRequired": true,
+            "multiSelect": true,
+            "quote": "'",
+            "delimiter": ",",
+            "query": "cross_workspace_cef_correlation\r\n| distinct tostring(CustomerName)",
+            "value": [
+              "value::all"
+            ],
+            "typeSettings": {
+              "additionalResourceOptions": [
+                "value::all"
               ]
             },
-            "sortBy": [
-              {
-                "itemKey": "correlated_count",
-                "sortOrder": 2
-              }
-            ]
-          },
-          "name": "query - 2 - Copy"
-        }
-      ],
-      "isLocked": false,
-      "fallbackResourceIds": [
-        "/subscriptions/6e5d5798-a0c1-4a69-8ec7-d5f43295a74e/resourcegroups/obrela-mssp/providers/microsoft.operationalinsights/workspaces/obrela-mssp"
-      ],
-      "fromTemplateId": "sentinel-UserWorkbook"
-    }
-  },
-  "resources": [
+            "timeContext": {
+              "durationMs": 86400000
+            },
+            "queryType": 0,
+            "resourceType": "microsoft.operationalinsights/workspaces"
+          }
+        ],
+        "style": "pills",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces"
+      },
+      "name": "parameters - 2"
+    },
     {
-      "name": "[parameters('workbookId')]",
-      "type": "microsoft.insights/workbooks",
-      "location": "[resourceGroup().location]",
-      "apiVersion": "2021-03-08",
-      "dependsOn": [],
-      "kind": "shared",
-      "properties": {
-        "displayName": "[parameters('workbookDisplayName')]",
-        "serializedData": "[string(variables('workbookContent'))]",
-        "version": "1.0",
-        "sourceId": "[parameters('workbookSourceId')]",
-        "category": "[parameters('workbookType')]"
-      }
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "cross_workspace_cef_correlation\r\n| where CustomerName in ({Customer})\r\n| where fileType_s!=\"Agent\"  and deviceProduct_s!=\"Logger\" and deviceCustomString1_s !endswith \"Case Management\"\r\n| extend mytime = unixtime_microseconds_todatetime(tolong(strcat(managerReceiptTime_s,\"000\")))\r\n| summarize count() by bin(mytime, 5m),tostring(CustomerName)",
+        "size": 0,
+        "title": "Correlation Timechart per Customer (Top 10)",
+        "timeContext": {
+          "durationMs": 14400000
+        },
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "timechart",
+        "chartSettings": {
+          "xAxis": "mytime",
+          "group": "CustomerName",
+          "createOtherGroup": 10,
+          "showLegend": true
+        }
+      },
+      "name": "query - 6"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "cross_workspace_cef_correlation\r\n| where CustomerName in ({Customer})\r\n| where fileType_s!=\"Agent\"  and deviceProduct_s!=\"Logger\" and deviceCustomString1_s !endswith \"Case Management\"\r\n| extend mytime = unixtime_microseconds_todatetime(tolong(strcat(managerReceiptTime_s,\"000\")))\r\n| extend baseEventCount = iff(isempty(baseEventCount_s),1,toint(baseEventCount_s))\r\n| summarize sum(baseEventCount) by bin(mytime, 5m),tostring(CustomerName)",
+        "size": 0,
+        "title": "Correlated Timechart per Customer (Top 10)",
+        "timeContext": {
+          "durationMs": 14400000
+        },
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "timechart",
+        "chartSettings": {
+          "xAxis": "mytime",
+          "group": "CustomerName",
+          "createOtherGroup": 10,
+          "showLegend": true
+        }
+      },
+      "name": "query - 6 - Copy"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "cross_workspace_cef_correlation\r\n| where CustomerName in ({Customer})\r\n| where fileType_s!=\"Agent\"  and deviceProduct_s!=\"Logger\" and deviceCustomString1_s !endswith \"Case Management\"\r\n| extend ruleName1=substring(extract('<Resource URI=\"(/[^/]*)*\" ID=',1,deviceCustomString2_s),1)\r\n| extend ruleName = iff(isempty(ruleName1),fileName_s,ruleName1)\r\n| extend join_name = strcat(CustomerName,\" - \", ruleName)\r\n| extend mytime = unixtime_microseconds_todatetime(tolong(strcat(managerReceiptTime_s,\"000\")))\r\n| summarize count() by bin(mytime, 5m),join_name",
+        "size": 1,
+        "title": "Correlation Timechart per Rule/Customer (Top 10)",
+        "timeContext": {
+          "durationMs": 14400000
+        },
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "timechart",
+        "chartSettings": {
+          "xAxis": "mytime",
+          "group": "join_name",
+          "createOtherGroup": 10,
+          "showLegend": true
+        }
+      },
+      "name": "Rule-Timechart-Correlation"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "cross_workspace_cef_correlation\r\n| where CustomerName in ({Customer})\r\n| where fileType_s!=\"Agent\"  and deviceProduct_s!=\"Logger\" and deviceCustomString1_s !endswith \"Case Management\"\r\n| extend ruleName1=substring(extract('<Resource URI=\"(/[^/]*)*\" ID=',1,deviceCustomString2_s),1)\r\n| extend ruleName = iff(isempty(ruleName1),fileName_s,ruleName1)\r\n| extend join_name = strcat(CustomerName,\" - \", ruleName)\r\n| extend baseEventCount = iff(isempty(baseEventCount_s),1,toint(baseEventCount_s))\r\n| extend mytime = unixtime_microseconds_todatetime(tolong(strcat(managerReceiptTime_s,\"000\")))\r\n| summarize sum(baseEventCount) by bin(mytime, 5m),join_name",
+        "size": 1,
+        "title": "Correlated Timechart per Rule/Customer (Top 10)",
+        "timeContext": {
+          "durationMs": 14400000
+        },
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "timechart",
+        "chartSettings": {
+          "xAxis": "mytime",
+          "group": "join_name",
+          "createOtherGroup": 10,
+          "showLegend": true
+        }
+      },
+      "name": "Rule-Timechart-Correlated"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "cross_workspace_cef_correlation\n| where CustomerName in ({Customer})\n| where fileType_s!=\"Agent\"  and deviceProduct_s!=\"Logger\" and deviceCustomString1_s !endswith \"Case Management\"\n| extend basePackage1=extract('<Resource URI=\"/All Rules/Real-time Rules/([^/]*)/',1,deviceCustomString2_s)\n| extend secondPackage1=extract('<Resource URI=\"/All Rules/Real-time Rules/([^/]*)/([^/]*)/',2,deviceCustomString2_s)\n| extend thirdPackage1=extract('<Resource URI=\"/All Rules/Real-time Rules/([^/]*)/([^/]*)/([^/\"]*)/',3,deviceCustomString2_s)\n| extend ruleName1=substring(extract('<Resource URI=\"(/[^/]*)*\" ID=',1,deviceCustomString2_s),1)\n| extend basePackage2=extract('/All Rules/Real-time Rules/([^/]*)/',1,filePath_s)\n| extend secondPackage2=extract('/All Rules/Real-time Rules/([^/]*)/([^/]*)/',2,filePath_s)\n| extend thirdPackage2=extract('/All Rules/Real-time Rules/([^/]*)/([^/]*)/([^/]*)/',3,filePath_s)\n| extend basePackage=iff(isempty(basePackage1),basePackage2,basePackage1)\n| extend secondPackage=iff(isempty(secondPackage1),secondPackage2,secondPackage1)\n| extend thirdPackage=iff(isempty(thirdPackage1),thirdPackage2,thirdPackage1)\n| extend ruleName = iff(isempty(ruleName1),fileName_s,ruleName1)\n| extend baseEventCount = iff(isempty(baseEventCount_s),1,toint(baseEventCount_s))\n| summarize correlation_count=count(), correlated_count=sum(baseEventCount) by ruleName, basePackage, secondPackage, thirdPackage\n| sort by correlation_count desc\n| limit 100",
+        "size": 1,
+        "title": "Top Correlation Rules fired (Top 100)",
+        "timeContext": {
+          "durationMs": 14400000
+        },
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "sortBy": []
+      },
+      "name": "query - 2"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "cross_workspace_cef_correlation\n| where CustomerName in ({Customer})\n| where fileType_s!=\"Agent\"  and deviceProduct_s!=\"Logger\" and deviceCustomString1_s !endswith \"Case Management\"\n| extend basePackage1=extract('<Resource URI=\"/All Rules/Real-time Rules/([^/]*)/',1,deviceCustomString2_s)\n| extend secondPackage1=extract('<Resource URI=\"/All Rules/Real-time Rules/([^/]*)/([^/]*)/',2,deviceCustomString2_s)\n| extend thirdPackage1=extract('<Resource URI=\"/All Rules/Real-time Rules/([^/]*)/([^/]*)/([^/\"]*)/',3,deviceCustomString2_s)\n| extend ruleName1=substring(extract('<Resource URI=\"(/[^/]*)*\" ID=',1,deviceCustomString2_s),1)\n| extend basePackage2=extract('/All Rules/Real-time Rules/([^/]*)/',1,filePath_s)\n| extend secondPackage2=extract('/All Rules/Real-time Rules/([^/]*)/([^/]*)/',2,filePath_s)\n| extend thirdPackage2=extract('/All Rules/Real-time Rules/([^/]*)/([^/]*)/([^/]*)/',3,filePath_s)\n| extend basePackage=iff(isempty(basePackage1),basePackage2,basePackage1)\n| extend secondPackage=iff(isempty(secondPackage1),secondPackage2,secondPackage1)\n| extend thirdPackage=iff(isempty(thirdPackage1),thirdPackage2,thirdPackage1)\n| extend ruleName = iff(isempty(ruleName1),fileName_s,ruleName1)\n| extend baseEventCount = iff(isempty(baseEventCount_s),1,toint(baseEventCount_s))\n| summarize correlation_count=count(), correlated_count=sum(baseEventCount) by tostring(CustomerName),ruleName, basePackage, secondPackage, thirdPackage\n| sort by correlation_count desc\n| limit 100",
+        "size": 1,
+        "title": "Top Correlation Rules fired per Customer (Top 100)",
+        "timeContext": {
+          "durationMs": 14400000
+        },
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "gridSettings": {
+          "sortBy": [
+            {
+              "itemKey": "correlated_count",
+              "sortOrder": 2
+            }
+          ]
+        },
+        "sortBy": [
+          {
+            "itemKey": "correlated_count",
+            "sortOrder": 2
+          }
+        ]
+      },
+      "name": "query - 2 - Copy"
     }
   ],
-  "outputs": {
-    "workbookId": {
-      "type": "string",
-      "value": "[resourceId( 'microsoft.insights/workbooks', parameters('workbookId'))]"
-    }
-  },
-  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"
+  "fallbackResourceIds": [
+    "/subscriptions/6e5d5798-a0c1-4a69-8ec7-d5f43295a74e/resourcegroups/obrela-mssp/providers/microsoft.operationalinsights/workspaces/obrela-mssp"
+  ],
+  "fromTemplateId": "sentinel-UserWorkbook",
+  "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json"
 }
