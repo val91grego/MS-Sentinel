@@ -1,0 +1,88 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "workspace": {
+            "type": "String"
+        }
+    },
+    "resources": [
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/1a0ceffe-7691-4cd9-bb8a-1089814e9dbd')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/1a0ceffe-7691-4cd9-bb8a-1089814e9dbd')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2021-09-01-preview",
+            "properties": {
+                "displayName": "AzureActivity - LA-Sentinel Deletion - Test",
+                "description": "This rule looks for LA Workspace or Sentinel deletion actions found at Subscription activity log.",
+                "severity": "High",
+                "enabled": true,
+                "query": "cross_workspace_azureactivity\r\n| where OperationName in (\"Delete Workspace\", \"Delete existing OMS solution\")\r\n| where ActivityStatus == \"Succeeded\"\n",
+                "queryFrequency": "PT5H",
+                "queryPeriod": "PT5H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "tactics": [
+                    "Impact"
+                ],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": false,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "AlertPerResult"
+                },
+                "alertDetailsOverride": {
+                    "alertDisplayNameFormat": null,
+                    "alertDescriptionFormat": "This rule looks for LA Workspace or Sentinel deletion actions found at Subscription activity log. Resource Deleted: \"{{ResourceId}}\"\n",
+                    "alertTacticsColumnName": null,
+                    "alertSeverityColumnName": null
+                },
+                "customDetails": {
+                    "CustomerName": "CustomerName"
+                },
+                "entityMappings": [
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "CallerIpAddress"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "FullName",
+                                "columnName": "Caller"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "AzureResource",
+                        "fieldMappings": [
+                            {
+                                "identifier": "ResourceId",
+                                "columnName": "ResourceId"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}
