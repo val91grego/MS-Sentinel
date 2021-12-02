@@ -23,7 +23,7 @@ jobs:
     env:
       resourceGroupName: 'devops_test'
       workspaceName: 'soc-internal'
-      directory: '${{ github.workspace }}'
+      directory: '${{ github.workspace }}/Parsers'
       cloudEnv: 'AzureCloud'
       creds: ${{ secrets.AZURE_SENTINEL_CREDENTIALS_2b505d6693974eb29f23e3dd83f94a46 }}
       contentTypes: 'Parser'
