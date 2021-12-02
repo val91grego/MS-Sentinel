@@ -16,7 +16,7 @@ $contentTypeMapping = @{
 }
 
 if ([string]::IsNullOrEmpty($contentTypes)) {
-    $contentTypes = "AnalyticsRule,Metadata"
+    $contentTypes = "AnalyticsRule,Parser,Metadata"
 }
 
 if (-not ($contentTypes.contains("Metadata"))) {
