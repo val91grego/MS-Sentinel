@@ -1,7 +1,0 @@
-AzureActivity
-| where OperationNameValue in ("MICROSOFT.RESOURCES/TENANTS/REGISTER/ACTION", "MICROSOFT.RESOURCES/TENANTS/UNREGISTER/ACTION")
-| where ActivityStatusValue == "Success"
-| where ResourceProviderValue == "MICROSOFT.RESOURCES"
-| extend Tenant = tostring(Properties_d.resource)
-| extend Scope = tostring(Authorization_d.scope)
-| project TimeGenerated, Caller, CallerIpAddress, OperationNameValue, Tenant, Scope
