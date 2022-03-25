@@ -1,0 +1,17 @@
+cross_workspace_azureactivity
+| where ResourceProviderValue == "MICROSOFT.MANAGEDSERVICES"
+| where OperationNameValue == "MICROSOFT.MANAGEDSERVICES/REGISTRATIONASSIGNMENTS/WRITE"
+| where ActivityStatusValue == "Success"
+| extend eventSubmissionTimestamp = tostring(Properties_d.eventSubmissionTimestamp)
+| extend roleAssignmentScope = tostring(parse_json(tostring(parse_json(Authorization).evidence)).roleAssignmentScope)
+| extend roleDefinitionId = tostring(parse_json(tostring(parse_json(Authorization).evidence)).roleDefinitionId)
+| project
+    TimeGenerated,
+    eventSubmissionTimestamp,
+    CustomerName,
+    Caller,
+    CallerIpAddress,
+    roleAssignmentScope,
+    roleDefinitionId,
+    Hierarchy,
+    SubscriptionId
