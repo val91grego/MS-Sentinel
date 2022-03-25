@@ -1,0 +1,18 @@
+cross_workspace_azureactivity
+| where OperationNameValue in ("MICROSOFT.RESOURCES/TENANTS/UNREGISTER/ACTION")
+| where ActivityStatusValue == "Success"
+| where ResourceProviderValue == "MICROSOFT.RESOURCES"
+| extend ManagementTenant = tostring(Properties_d.resource)
+| extend CustomerTenant = TenantId
+| extend Scope = tostring(Authorization_d.scope)
+| project
+    TimeGenerated,
+    CustomerName,
+    Caller,
+    CallerIpAddress,
+    OperationNameValue,
+    CustomerTenant,
+    ManagementTenant,
+    Scope,
+    SubscriptionId,
+    _ResourceId
