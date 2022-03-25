@@ -1,12 +1,17 @@
-AzureActivity
+cross_workspace_azureactivity
 | where ResourceProviderValue == "MICROSOFT.MANAGEDSERVICES"
 | where OperationNameValue in ("MICROSOFT.MANAGEDSERVICES/REGISTRATIONASSIGNMENTS/DELETE", "MICROSOFT.MANAGEDSERVICES/REGISTRATIONDEFINITIONS/DELETE")
 | where ActivityStatusValue == "Success"
 | extend eventSubmissionTimestamp = tostring(Properties_d.eventSubmissionTimestamp)
 | extend roleAssignmentScope = tostring(parse_json(tostring(parse_json(Authorization).evidence)).roleAssignmentScope)
+| extend roleDefinitionId = tostring(parse_json(tostring(parse_json(Authorization).evidence)).roleDefinitionId)
 | project
     TimeGenerated,
     eventSubmissionTimestamp,
+    CustomerName,
     Caller,
     CallerIpAddress,
-    roleAssignmentScope
+    roleAssignmentScope,
+    roleDefinitionId,
+    Hierarchy,
+    SubscriptionId
