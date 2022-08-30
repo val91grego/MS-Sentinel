@@ -1,0 +1,33 @@
+cross_workspace_azureactivity
+| where ResourceProviderValue == "MICROSOFT.STORAGE"
+| where OperationNameValue == "MICROSOFT.STORAGE/STORAGEACCOUNTS/WRITE"
+| extend ExistingNetworkAccess = tostring(parse_json(tostring(parse_json(tostring(Properties_d.responseBody)).properties)).publicNetworkAccess)
+| extend StorageAccount = tostring(Properties_d.resource)
+| sort by TimeGenerated desc  
+| project
+    TimeGenerated,
+    SubscriptionId,
+    Caller,
+    StorageAccount,
+    ExistingNetworkAccess,
+    CustomerName
+| join kind=inner
+    (
+    cross_workspace_azureactivity
+    | where ResourceProviderValue == "MICROSOFT.STORAGE"
+    | where OperationNameValue == "MICROSOFT.STORAGE/STORAGEACCOUNTS/WRITE"
+    | extend PublicNetworkAccess = tostring(parse_json(tostring(parse_json(tostring(Properties_d.responseBody)).properties)).publicNetworkAccess)
+    | extend StorageAccount = tostring(Properties_d.resource)
+    | summarize arg_max(TimeGenerated, *) by StorageAccount, PublicNetworkAccess, CustomerName
+    ) 
+    on StorageAccount
+| where ExistingNetworkAccess != PublicNetworkAccess and PublicNetworkAccess == "Enabled"
+| project
+    DetectionTime = TimeGenerated1,
+    StorageAccount,
+    ExistingNetworkAccess,
+    PublicNetworkAccess,
+    SubscriptionId,
+    Caller,
+    CustomerName,
+    _ResourceId
