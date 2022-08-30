@@ -1,0 +1,5 @@
+cross_workspace_azureactivity
+| where OperationNameValue has "MICROSOFT.SECURITYINSIGHTS/ALERTRULES/DELETE"
+| where ActivityStatusValue == "Success"
+| extend Analytics_Rule_ID = tostring(parse_json(Properties).resource)
+| summarize StartTime = min(TimeGenerated), EndTime = max(TimeGenerated) by Caller, CallerIpAddress, Analytics_Rule_ID, CustomerName
