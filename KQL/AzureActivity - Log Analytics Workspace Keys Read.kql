@@ -1,0 +1,13 @@
+cross_workspace_azureactivity
+| where OperationNameValue == "MICROSOFT.OPERATIONALINSIGHTS/WORKSPACES/SHAREDKEYS/ACTION"
+| where ActivityStatusValue == "Success"
+| extend WorkspaceName = tostring(parse_json(Properties).resource)
+| project
+    TimeGenerated,
+    CustomerName,
+    Caller,
+    WorkspaceName,
+    CallerIpAddress,
+    SubscriptionId,
+    ResourceGroup,
+    _ResourceId
