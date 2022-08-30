@@ -1,0 +1,17 @@
+cross_workspace_azureactivity
+| where ResourceProviderValue == "MICROSOFT.STORAGE"
+| where OperationNameValue == "MICROSOFT.AUTHORIZATION/POLICIES/AUDIT/ACTION"
+| where CategoryValue == "Policy"
+| where Level == "Warning"
+| extend StorageAccount = tostring(Properties_d.resource)
+| extend PolicyDefinition1 = tostring(parse_json(tostring(Properties_d.policies))[0].policyDefinitionReferenceId)
+| extend PolicyDefinition2 = tostring(parse_json(tostring(Properties_d.policies))[0].policyDefinitionReferenceId)
+| where PolicyDefinition1 == "StorageDisallowPublicAccess" or PolicyDefinition2 == "StorageDisallowPublicAccess"
+| project
+    CustomerName,
+    TimeGenerated,
+    StorageAccount,
+    PolicyDefinition1,
+    PolicyDefinition2,
+    Caller,
+    CallerIpAddress
