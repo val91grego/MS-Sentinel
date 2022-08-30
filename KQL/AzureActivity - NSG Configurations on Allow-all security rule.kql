@@ -1,0 +1,32 @@
+cross_workspace_azureactivity
+| where ResourceProviderValue == "MICROSOFT.NETWORK"
+| where OperationNameValue == "MICROSOFT.NETWORK/NETWORKSECURITYGROUPS/SECURITYRULES/WRITE"
+| where ActivityStatusValue == "Start"
+| extend NSGSplit=split(_ResourceId, "/")
+| extend NSG = toupper(tostring(NSGSplit[8]))
+| extend sourceAddressPrefix = tostring(parse_json(tostring(parse_json(tostring(Properties_d.requestbody)).properties)).sourceAddressPrefix)
+| extend destinationAddressPrefix = tostring(parse_json(tostring(parse_json(tostring(Properties_d.requestbody)).properties)).destinationAddressPrefix)
+| extend RuleName = tostring(parse_json(tostring(Properties_d.requestbody)).name)
+| extend Access = tostring(parse_json(tostring(parse_json(tostring(Properties_d.requestbody)).properties)).access)
+| extend Priority = tostring(parse_json(tostring(parse_json(tostring(Properties_d.requestbody)).properties)).priority)
+| extend Direction = tostring(parse_json(tostring(parse_json(tostring(Properties_d.requestbody)).properties)).direction)
+| where sourceAddressPrefix == "*" and destinationAddressPrefix == "*"
+| where Access == "Allow"
+| where Direction == "Inbound"
+| where RuleName !contains "deny"
+| project
+    TimeGenerated,
+    CustomerName,
+    Caller,
+    CallerIpAddress,
+    ResourceGroup,
+    sourceAddressPrefix,
+    destinationAddressPrefix,
+    NSG,
+    RuleName,
+    Access,
+    Priority,
+    Direction,
+    SubscriptionId,
+    _ResourceId
+
