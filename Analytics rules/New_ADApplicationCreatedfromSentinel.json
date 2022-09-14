@@ -17,7 +17,7 @@
                 "displayName": "New AD Application Created from Sentinel",
                 "description": "This rule detects new application registrations, service principals creations from Azure Sentinel instance. This will help monitoring app registrations that were not created from user.",
                 "severity": "Medium",
-                "enabled": true,
+                "enabled": false,
                 "query": "AuditLogs\n| where Category == \"ApplicationManagement\"\n| where OperationName in (\"Add application\", \"Add service principal\")\n| where Identity == \"Azure Security Insights\"\n| extend ApplicationName = tostring(TargetResources[0].displayName)\n| extend ApplicationId = tostring(AdditionalDetails[0].value)\n| project\n    TimeGenerated,\n    ActivityDateTime,\n    AADOperationType,\n    Identity,\n    ApplicationName,\n    ApplicationId,\n    ResourceId\n\n",
                 "queryFrequency": "PT5M",
                 "queryPeriod": "PT5M",
