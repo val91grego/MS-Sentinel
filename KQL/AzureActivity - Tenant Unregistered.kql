@@ -1,4 +1,4 @@
-cross_workspace_azureactivity
+AzureActivity
 | where OperationNameValue in ("MICROSOFT.RESOURCES/TENANTS/UNREGISTER/ACTION")
 | where ActivityStatusValue == "Success"
 | where ResourceProviderValue == "MICROSOFT.RESOURCES"
@@ -7,7 +7,6 @@ cross_workspace_azureactivity
 | extend Scope = tostring(Authorization_d.scope)
 | project
     TimeGenerated,
-    CustomerName,
     Caller,
     CallerIpAddress,
     OperationNameValue,
