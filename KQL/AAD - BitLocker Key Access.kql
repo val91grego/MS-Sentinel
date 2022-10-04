@@ -1,0 +1,16 @@
+AuditLogs
+| where OperationName in ("Delete BitLocker key", "Read BitLocker key")
+| where Result == "success"
+| extend ActorIP = tostring(parse_json(tostring(InitiatedBy.user)).ipAddress)
+| extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| extend TargetResourcedisplayName = tostring(TargetResources[0].displayName)
+| extend Actorid = tostring(parse_json(tostring(InitiatedBy.user)).id)
+| extend categoryTechnique = '/Exploit/Privilege Escalation'
+| project
+    TimeGenerated,
+    OperationName,
+    Actor,
+    ActorIP,
+    Actorid,
+    LoggedByService,
+    categoryTechnique
