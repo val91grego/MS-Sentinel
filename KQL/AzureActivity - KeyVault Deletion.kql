@@ -1,3 +1,4 @@
+// Detects KeyVault deletions from Subscription audits
 AzureActivity
 | where OperationNameValue =~ "Microsoft.RecoveryServices/vaults/delete"
 | where ActivityStatus == "Succeeded"
