@@ -1,10 +1,10 @@
-cross_workspace_azureactivity
+//Detects actions indicating that someone access workspace keys
+AzureActivity
 | where OperationNameValue == "MICROSOFT.OPERATIONALINSIGHTS/WORKSPACES/SHAREDKEYS/ACTION"
 | where ActivityStatusValue == "Success"
 | extend WorkspaceName = tostring(parse_json(Properties).resource)
 | project
     TimeGenerated,
-    CustomerName,
     Caller,
     WorkspaceName,
     CallerIpAddress,
