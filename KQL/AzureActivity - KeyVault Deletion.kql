@@ -1,4 +1,4 @@
-cross_workspace_azureactivity
+AzureActivity
 | where OperationNameValue =~ "Microsoft.RecoveryServices/vaults/delete"
 | where ActivityStatus == "Succeeded"
-| project CustomerName, CallerIpAddress, Caller, ResourceId
+| project CallerIpAddress, Caller, ResourceId
