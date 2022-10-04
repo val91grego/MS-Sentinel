@@ -1,4 +1,5 @@
-cross_workspace_azureactivity
+//Detects Lighthouse Delegations deletions on customer Tenant
+AzureActivity
 | where ResourceProviderValue == "MICROSOFT.MANAGEDSERVICES"
 | where OperationNameValue in ("MICROSOFT.MANAGEDSERVICES/REGISTRATIONASSIGNMENTS/DELETE", "MICROSOFT.MANAGEDSERVICES/REGISTRATIONDEFINITIONS/DELETE")
 | where ActivityStatusValue == "Success"
@@ -8,7 +9,6 @@ cross_workspace_azureactivity
 | project
     TimeGenerated,
     eventSubmissionTimestamp,
-    CustomerName,
     Caller,
     CallerIpAddress,
     roleAssignmentScope,
