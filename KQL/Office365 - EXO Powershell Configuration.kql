@@ -1,0 +1,18 @@
+OfficeActivity
+| where OfficeWorkload == "Exchange"
+| where RecordType == "ExchangeAdmin"
+| where ResultStatus == "True"
+| where Operation == "Set-User"
+| extend TargetOfficeAccount = tostring(parse_json(Parameters)[0].Value)
+| extend ParameterChanged = tostring(parse_json(Parameters)[1].Name)
+| extend ParemeterValue = tostring(parse_json(Parameters)[1].Value)
+| where ParameterChanged == "RemotePowerShellEnabled"
+| project
+    TimeGenerated,
+    UserId,
+    ClientIP,
+    OfficeObjectId,
+    TargetOfficeAccount,
+    OrganizationName,
+    ParameterChanged,
+    ParemeterValue
