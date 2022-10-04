@@ -1,0 +1,15 @@
+//Detects new application registrations, service principals creations from Azure Sentinel instance.
+AuditLogs
+| where Category == "ApplicationManagement"
+| where OperationName in ("Add application", "Add service principal")
+| where Identity == "Azure Security Insights"
+| extend ApplicationName = tostring(TargetResources[0].displayName)
+| extend ApplicationId = tostring(AdditionalDetails[0].value)
+| project
+    TimeGenerated,
+    ActivityDateTime,
+    AADOperationType,
+    Identity,
+    ApplicationName,
+    ApplicationId,
+    ResourceId
