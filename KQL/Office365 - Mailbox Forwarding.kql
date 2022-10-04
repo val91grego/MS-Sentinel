@@ -1,0 +1,16 @@
+OfficeActivity
+| where OfficeWorkload == "Exchange"
+    and Operation == "Set-Mailbox"
+    and Parameters has "DeliverToMailboxAndForward"
+| extend Email = tostring(parse_json(Parameters)[1].Value)
+| project
+    TimeGenerated,
+    OfficeWorkload,
+    UserId,
+    OfficeObjectId,
+    Email,
+    CustomerName,
+    ClientIP,
+    OrganizationName,
+    UserType,
+    UserKey
