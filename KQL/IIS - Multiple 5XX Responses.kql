@@ -1,0 +1,7 @@
+let TimeFrame = 5m;
+let 5XXthreshold = 40;
+W3CIISLog
+| where TimeGenerated > ago(TimeFrame)
+| where scStatus startswith "5"
+| summarize StartTimeUtc = min(TimeGenerated), EndTimeUtc = max(TimeGenerated), Total5XXResponses=count() by sSiteName, Computer
+| where Total5XXResponses >= 5XXthreshold
