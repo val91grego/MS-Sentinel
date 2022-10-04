@@ -1,0 +1,4 @@
+OfficeActivity
+| where OfficeWorkload == "Exchange"
+| where Operation in~ ("Remove-RetentionPolicy", "Remove-RetentionPolicyTag", "Set-RetentionPolicyTag", "Set-RetentionPolicy")
+| project TimeGenerated, CustomerName, Operation, UserId, ClientIP
