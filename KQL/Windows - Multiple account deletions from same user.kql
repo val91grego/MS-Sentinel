@@ -1,0 +1,7 @@
+let TimeFrame = 10m;
+let deletionsThreshold = 5;
+SecurityEvent
+| where TimeGenerated > ago(TimeFrame) 
+| where EventID == "4726"
+| summarize StartTime = min(TimeGenerated), EndTime = max(TimeGenerated), TotalAccountDeletions = count() by SubjectUserName
+| where TotalAccountDeletions >= deletionsThreshold
