@@ -1,6 +1,16 @@
-cross_workspace_azureactivity
+//Detects Storage Account deletion actions
+AzureActivity
 | where ResourceProviderValue == "MICROSOFT.STORAGE"
 | where OperationNameValue == "MICROSOFT.STORAGE/STORAGEACCOUNTS/DELETE"
 | extend StorageAccount = tostring(parse_json(Properties).resource)
 | extend Role = tostring(parse_json(tostring(parse_json(Authorization).evidence)).role)
-| project TimeGenerated, EventSubmissionTimestamp, CustomerName, StorageAccount, SubscriptionId, ResourceGroup, _ResourceId, Caller, CallerIpAddress, Role
+| project
+    TimeGenerated,
+    EventSubmissionTimestamp,
+    StorageAccount,
+    SubscriptionId,
+    ResourceGroup,
+    _ResourceId,
+    Caller,
+    CallerIpAddress,
+    Role
