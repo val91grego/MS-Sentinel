@@ -1,4 +1,4 @@
-cross_workspace_azureactivity
+AzureActivity
 | where ResourceProviderValue == "MICROSOFT.STORAGE"
 | where OperationNameValue == "MICROSOFT.STORAGE/STORAGEACCOUNTS/WRITE"
 | extend ExistingNetworkAccess = tostring(parse_json(tostring(parse_json(tostring(Properties_d.responseBody)).properties)).publicNetworkAccess)
@@ -9,11 +9,10 @@ cross_workspace_azureactivity
     SubscriptionId,
     Caller,
     StorageAccount,
-    ExistingNetworkAccess,
-    CustomerName
+    ExistingNetworkAccess
 | join kind=inner
     (
-    cross_workspace_azureactivity
+    AzureActivity
     | where ResourceProviderValue == "MICROSOFT.STORAGE"
     | where OperationNameValue == "MICROSOFT.STORAGE/STORAGEACCOUNTS/WRITE"
     | extend PublicNetworkAccess = tostring(parse_json(tostring(parse_json(tostring(Properties_d.responseBody)).properties)).publicNetworkAccess)
@@ -28,6 +27,5 @@ cross_workspace_azureactivity
     ExistingNetworkAccess,
     PublicNetworkAccess,
     SubscriptionId,
-    Caller,
-    CustomerName,
+    Caller
     _ResourceId
