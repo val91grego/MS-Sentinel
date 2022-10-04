@@ -1,0 +1,13 @@
+SecurityEvent
+| where EventID == 4688
+| where Process == "certutil.exe"
+| where AccountType == "User"
+| where CommandLine contains "http"
+| project
+    TimeGenerated,
+    Account,
+    Computer,
+    CommandLine,
+    NewProcessName,
+    SubjectAccount,
+    TargetAccount
