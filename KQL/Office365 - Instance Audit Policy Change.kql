@@ -1,0 +1,11 @@
+OfficeActivity
+| where OfficeWorkload == "Exchange"
+| where Operation == "Set-AdminAuditLogConfig"
+| project
+    TimeGenerated,
+    Operation,
+    UserId,
+    ClientIP,
+    RecordType,
+    OfficeObjectId,
+    OrganizationName
