@@ -1,0 +1,14 @@
+let commands = dynamic(["shadow", "tcpdump", "curl", "halt", "wget", "rm -", "chmod 777", "nmap", "mkfifo"]);
+CommonSecurityLog
+| where DeviceVendor == "Unix"
+| where DeviceProduct == "history"
+| where Activity == "Command execution"
+| where FileName in (['commands'])
+| project
+    TimeGenerated,
+    Computer,
+    DeviceName,
+    FileName,
+    DestinationHostName,
+    SourceUserName,
+    DestinationUserName
