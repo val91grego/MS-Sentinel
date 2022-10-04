@@ -1,3 +1,4 @@
+//Detects Public IP resources deletion
 AzureActivity
 | order by TimeGenerated
 | where OperationName == "Delete Public Ip Address"
