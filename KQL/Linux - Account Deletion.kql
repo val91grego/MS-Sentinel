@@ -1,0 +1,17 @@
+Syslog
+    | where SourceSystem == "Linux"
+    | where ProcessName == "userdel"
+    | where SyslogMessage !contains "failed"
+    | where SyslogMessage has_cs "user"
+    | extend EventVendor = 'Linux'
+    | extend EventProduct = 'Linux'
+    | parse SyslogMessage with *"delete user \'"username"\'"
+    | extend DestinationUserName = username
+    | project
+        TimeGenerated,
+        DestinationUserName,
+        HostName,
+        HostIP,
+        SeverityLevel,
+        EventVendor,
+        EventProduct
