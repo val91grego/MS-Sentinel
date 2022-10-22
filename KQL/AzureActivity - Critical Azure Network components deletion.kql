@@ -1,11 +1,10 @@
-cross_workspace_azureactivity
+AzureActivity
 | where ResourceProviderValue == "MICROSOFT.NETWORK"
 | where OperationNameValue in ("MICROSOFT.NETWORK/FIREWALLPOLICIES/DELETE", "MICROSOFT.NETWORK/AZUREFIREWALLS/DELETE", "MICROSOFT.NETWORK/VIRTUALNETWORKGATEWAYS/DELETE")
 | where ActivityStatusValue == "Success"
 | extend Resource = tostring(Properties_d.resource)
 | project
     TimeGenerated,
-    CustomerName,
     SubscriptionId,
     ResourceGroup,
     Resource,
