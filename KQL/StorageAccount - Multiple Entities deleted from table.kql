@@ -1,0 +1,7 @@
+let timeframe = 10m;
+let deletionsCountThreshold = 50;
+StorageTableLogs
+| where TimeGenerated >ago(timeframe)
+| where OperationName == "DeleteEntity"
+| summarize StartTime = min(TimeGenerated), EndTime = max(TimeGenerated), deletionsCount = count() by AccountName, UserAgentHeader, _ResourceId
+| where deletionsCount >=deletionsCountThreshold
