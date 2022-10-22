@@ -1,0 +1,17 @@
+Syslog
+| where SourceSystem == "Linux"
+| where ProcessName == "groupdel"
+| where SyslogMessage has_cs "group"
+| where SyslogMessage endswith "removed"
+| extend EventVendor = 'Linux'
+| extend EventProduct = 'Linux'
+| extend CategoryBehavior = '/Authorizastion/Delete'
+| extend GroupName = extract("group '(\\S+)'", 1, SyslogMessage)
+| project
+    TimeGenerated,
+    HostName,
+    HostIP,
+    GroupName,
+    CategoryBehavior,
+    EventVendor,
+    EventProduct
