@@ -1,0 +1,24 @@
+Syslog
+    | where SourceSystem == "Linux"
+    | where ProcessName == "useradd"
+    | where SyslogMessage !contains "failed"
+    | where SyslogMessage has_cs "user"
+    | extend EventVendor = 'Linux'
+    | extend EventProduct = 'Linux'
+    | parse SyslogMessage with *"name="username", UID="uid", "*
+    | extend DestinationUserName = username
+    | extend DestinationUserID = uid
+    | extend UserGroupId = extract("GID=(\\d+),", 1, SyslogMessage)
+    | extend DestinationUserHomePath = extract("home=(\\S+),", 1, SyslogMessage)
+    | extend DestinationUserShell = extract("shell=(.*),", 1, SyslogMessage)
+    | project
+        TimeGenerated,
+        DestinationUserName,
+        DestinationUserHomePath,
+        DestinationUserID,
+        UserGroupId,
+        HostName,
+        HostIP,
+        SeverityLevel,
+        EventVendor,
+        EventProduct
