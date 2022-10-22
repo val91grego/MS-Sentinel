@@ -1,0 +1,13 @@
+StorageBlobLogs
+| where OperationName == "DeleteContainer"
+| where StatusText == "Success"
+| project
+    TimeGenerated,
+    AccountName,
+    OperationName,
+    Category,
+    AuthenticationType,
+    Uri,
+    CallerIpAddress,
+    UserAgentHeader,
+    _ResourceId
