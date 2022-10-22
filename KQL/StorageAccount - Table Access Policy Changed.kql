@@ -1,0 +1,19 @@
+StorageTableLogs
+| where OperationName == "SetTableAcl"
+| extend uriplit = split(Uri, "/")
+| extend tableuri = tostring(uriplit[3])
+| extend tablesplit = split(tableuri, "?")
+| extend Table = tostring(tablesplit[0])
+| project
+    TimeGenerated,
+    OperationName,
+    AccountName,
+    AuthenticationType,
+    StatusCode,
+    StatusText,
+    Uri,
+    CallerIpAddress,
+    Table,
+    UserAgentHeader,
+    Category,
+    _ResourceId
