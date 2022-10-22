@@ -1,0 +1,20 @@
+Syslog
+| where SourceSystem == "Linux"
+| where ProcessName == "groupadd"
+| where SyslogMessage has_cs "group"
+| where SyslogMessage startswith "new group"
+| extend EventVendor = 'Linux'
+| extend EventProduct = 'Linux'
+| extend CategoryBehavior = '/Authorization/Add'
+| extend CategoryOutcome = '/Success'
+| extend GroupName = extract("name=(\\S+),", 1, SyslogMessage)
+| extend GroupId = extract("GID=(\\d+)", 1, SyslogMessage)
+| project
+    TimeGenerated,
+    HostName,
+    HostIP,
+    GroupName,
+    GroupId,
+    CategoryBehavior,
+    EventVendor,
+    EventProduct
