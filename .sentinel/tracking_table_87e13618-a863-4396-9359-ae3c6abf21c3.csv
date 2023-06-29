@@ -1,0 +1,4 @@
+FileName, CommitSha
+SentinelExported-AnalyticsRule/Suspicious number of resource creation or deployment activities.json,9962623a3a0a15873f2592f130047aee59ebf3bd
+SentinelExported-AnalyticsRule/TI map Domain entity to SecurityAlert.json,13e394701b668dd5e55f0028bddefcf4e62b8cf5
+SentinelExported-AnalyticsRule/TI Map IP Entity to W3CIISLog.json,2bf39e0b5730e40e6a8216c4beb986d7ffc2819b
