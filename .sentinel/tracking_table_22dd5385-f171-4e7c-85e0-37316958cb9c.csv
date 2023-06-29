@@ -1,7 +1,8 @@
 FileName, CommitSha
 SentinelExported-AnalyticsRule/TI map Domain entity to SecurityAlert.json,13e394701b668dd5e55f0028bddefcf4e62b8cf5
-SentinelExported-AnalyticsRule/TI map IP entity to OfficeActivity.json,010390e83649d2133f659ea049e29dce592d7cf9
+SentinelExported-AnalyticsRule/Suspicious number of resource creation or deployment activities.json,14bd21ec41342ba3592d5b7e09187b86db2ec1a7
 SentinelExported-AnalyticsRule/TI Map IP Entity to W3CIISLog.json,2bf39e0b5730e40e6a8216c4beb986d7ffc2819b
-SentinelExported-AnalyticsRule/TI map Email entity to SigninLogs.json,c91a5ef49012b81f4919694c8e06147072a77e53
 SentinelExported-AnalyticsRule/IIS - Shellshock Bash Exploit Attempt.json,ab61d6e44d7de2d99429a0a05c8c6cae44628bec
-SentinelExported-AnalyticsRule/Suspicious number of resource creation or deployment activities.json,9962623a3a0a15873f2592f130047aee59ebf3bd
+SentinelExported-AnalyticsRule/TI map IP entity to OfficeActivity.json,010390e83649d2133f659ea049e29dce592d7cf9
+SentinelExported-AnalyticsRule/TI map Domain entity to Syslog.json,cdda595da31a8cb0cbdb51c6cef18efaf4d2b161
+SentinelExported-AnalyticsRule/TI map Email entity to SigninLogs.json,c91a5ef49012b81f4919694c8e06147072a77e53
