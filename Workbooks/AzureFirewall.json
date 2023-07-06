@@ -5,7 +5,7 @@
       "type": "string",
       "defaultValue": "Azure Firewall - valtas",
       "metadata": {
-        "description": "The friendly name for the workbook that is used in the Gallery or Saved List.  This name must be unique within a resource group."
+        "description": "TEST The friendly name for the workbook that is used in the Gallery or Saved List.  This name must be unique within a resource group."
       }
     },
     "workbookType": {
