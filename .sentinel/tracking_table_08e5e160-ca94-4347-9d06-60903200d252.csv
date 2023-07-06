@@ -1,3 +1,4 @@
 FileName, CommitSha
-Parsers/Usage.json,09cd0e160fc71c299316caf2e15136cd61475dba
 Analytics rules/New_ADApplicationCreatedfromSentinel.json,638c2c009cb67ac861be2de06ce8c8e36592ed26
+Analytics rules/Azure_Sentinel_analytic_rule.json,4f0bf93a46d451bd9bc36e0cfe350c821dcc56a6
+Parsers/Usage.json,09cd0e160fc71c299316caf2e15136cd61475dba
