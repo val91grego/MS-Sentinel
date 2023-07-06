@@ -14,9 +14,9 @@
       "location": "[resourceGroup().location]",
       "properties": {
         "etag": "*",
-        "displayName": "Usage-Test",
+        "displayName": "UsageTest",
         "category": "Cost",
-        "FunctionAlias": "Usage-Test",
+        "FunctionAlias": "UsageTest",
         "query": "Usage",
         "version": 1,
         "functionParameters": "disabled:bool=False"
