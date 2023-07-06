@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-08-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "string"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/ASimDnsMicrosoftOMS')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "etag": "*",
+        "displayName": "Usage-Test",
+        "category": "Cost",
+        "FunctionAlias": "Usage-Test",
+        "query": "Usage",
+        "version": 1,
+        "functionParameters": "disabled:bool=False"
+      }
+    }
+  ]
+}
