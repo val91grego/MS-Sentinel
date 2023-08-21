@@ -1,0 +1,84 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/87b0bd86-ac61-4800-a2a3-4a999ce3da30')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/87b0bd86-ac61-4800-a2a3-4a999ce3da30')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2023-02-01-preview",
+      "properties": {
+        "displayName": "BehaviorAnalytics - Anomalous AAD Operation",
+        "description": "This rule query generates an output of all the users performing a potentially high risk operation in Azure AD where one or more features of the activity deviate from the user, his peers, or the tenant profile or the user has a high blast radius during the action. Specific high privilege AAD role manipulation is considered a high risk operation as well as abnormal user creation or change.",
+        "alertDetailsOverride": {
+          "alertDescriptionFormat": "It was detected that user {{{UserName}}  has performed an operation {{{OperationName}} . This action is considered anomalous due  to {{{uncommon_Attribute}}  as compared to peers and tenant analytics data, or the user had a high blast radius during the activity. Please investigate the users overall activity and purpose to verify if this behavior is unusual or suspicious.",
+          "alertDisplayNameFormat": "BehaviorAnalytics - {{type_s}} from user: {{{UserName}} ",
+          "alertDynamicProperties": null,
+          "alertSeverityColumnName": null,
+          "alertTacticsColumnName": null
+        },
+        "customDetails": {
+          "targetUser": "TargetUser"
+        },
+        "entityMappings": [
+          {
+            "entityType": "Account",
+            "fieldMappings": [
+              {
+                "columnName": "UserName",
+                "identifier": "Name"
+              }
+            ]
+          },
+          {
+            "entityType": "IP",
+            "fieldMappings": [
+              {
+                "columnName": "SourceIPAddress",
+                "identifier": "Address"
+              }
+            ]
+          }
+        ],
+        "eventGroupingSettings": {
+          "aggregationKind": "AlertPerResult"
+        },
+        "incidentConfiguration": {
+          "createIncident": false,
+          "groupingConfiguration": {
+            "enabled": false,
+            "groupByAlertDetails": [],
+            "groupByCustomDetails": [],
+            "groupByEntities": [],
+            "lookbackDuration": "PT5H",
+            "matchingMethod": "AllEntities",
+            "reopenClosedIncident": false
+          }
+        },
+        "query": "let critical = dynamic(['9b895d92-2cd3-44c7-9d02-a6ac2d5ea5c3','c4e39bd9-1100-46d3-8c65-fb160da0071f','158c047a-c907-4556-b7ef-446551a6b5f7','62e90394-69f5-4237-9190-012177145e10','d29b2b05-8046-44ba-8758-1e26182fcf32','729827e3-9c14-49f7-bb1b-9608f156bbb8','966707d0-3269-4727-9be2-8c3a10f19b9d','194ae4cb-b126-40b2-bd5b-6091b380977d','fe930be7-5e62-47db-91af-98c3a49a38b1']);\r\nlet high = dynamic(['cf1c38e5-3621-4004-a7cb-879624dced7c','7495fdc4-34c4-4d15-a289-98788ce399fd','aaf43236-0c0d-4d5f-883a-6955382ac081','3edaf663-341e-4475-9f94-5c398ef6c070','7698a772-787b-4ac8-901f-60d6b08affd2','b1be1c3e-b65d-4f19-8427-f6fa0d97feb9','9f06204d-73c1-4d4c-880a-6edb90606fd8','29232cdf-9323-42fd-ade2-1d097af3e4de','be2f45a1-457d-42af-a067-6ec1fa63bc45','7be44c8a-adaf-4e2a-84d6-ab2649e08a13','e8611ab8-c189-46e8-94e1-60213ab1f814']);\r\ncross_workspace_auditlogs\r\n| where OperationName in ( //\"Add user\", \r\n\"Reset user password\", \"Update user\", \"Add member to role\")\r\n| mv-expand AdditionalDetails\r\n| mv-expand TargetResources\r\n| extend RoleId = tostring(TargetResources.modifiedProperties[0].newValue)\r\n| extend RoleName = tostring(TargetResources.modifiedProperties[1].newValue)\r\n| where isnotempty(RoleId) or isnotempty(RoleName)\r\n| extend TargetId = tostring(TargetResources.id)\r\n| join kind=inner ( cross_workspace_behavior_analytics\r\n) on $left._ItemId == $right.SourceRecordId and $left.WorkspaceId == $right.WorkspaceId\r\n| where UsersInsights.BlastRadius == \"High\" or ActivityInsights has \"True\"\r\n| extend Target =  iff(tostring(TargetResources.userPrincipalName) has \"#EXT#\",replace(\"_\",\"@\",tostring(split(TargetResources.userPrincipalName, \"#\")[0])),TargetResources.userPrincipalName),tostring(TargetResources.userPrincipalName)\r\n| extend UserPrincipalName = iff(UserPrincipalName has \"#EXT#\",replace(\"_\",\"@\",tostring(split(UserPrincipalName, \"#\")[0])),UserPrincipalName),\r\nUserName = iff(UserName has \"#EXT#\",replace(\"_\",\"@\",tostring(split(UserPrincipalName, \"#\")[0])),UserName) \r\n| extend conditions = iff(((OperationName in (\r\n// \"Add user\", \r\n\"Reset user password\") and ActivityInsights has \"True\") or \r\n(OperationName == \"Update user\" and AdditionalDetails.key == \"UserPrincipalName\" and RoleId in (critical,high) ) or \r\n(OperationName == \"Add member to role\" and RoleId in (critical,high))), true, false)\r\n| where conditions\r\n| project TimeGenerated, CustomerName, \r\nUserName, UserPrincipalName, UsersInsights, ActivityType, ActionType, [\"TargetUser\"]=Target,RoleName,ActivityInsights ,SourceIPAddress, SourceIPLocation, SourceDevice, DevicesInsights, OperationName\r\n| extend uncommon_Attribute = extract('([A-Za-z]+)\":\"True', 1, tostring(ActivityInsights))\r\n| extend type_s = case(\r\nOperationName == 'Add member to role', 'Role Assignment',\r\nOperationName == 'Update user', 'AAD Account Manipulation',\r\n// OperationName == 'Reset user password', 'Password Reset',\r\n'Password Reset'\r\n// 'AAD Account Creation'\r\n)\r\n//remove 'Add User' because most customers will have a user that always adds external users regularly or need to have a filterout list with user - customer - operation to exclude them",
+        "queryPeriod": "PT1H",
+        "queryFrequency": "PT1H",
+        "sentinelEntitiesMappings": null,
+        "severity": "Medium",
+        "suppressionDuration": "PT5H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "PrivilegeEscalation",
+          "Persistence"
+        ],
+        "techniques": [],
+        "templateVersion": null,
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "alertRuleTemplateName": null,
+        "enabled": true
+      }
+    }
+  ]
+}
