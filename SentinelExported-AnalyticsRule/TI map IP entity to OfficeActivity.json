@@ -81,7 +81,7 @@
         "triggerOperator": "GreaterThan",
         "triggerThreshold": 0,
         "alertRuleTemplateName": "f15370f4-c6fa-42c5-9be4-1d308f40284e",
-        "enabled": false
+        "enabled": true
       }
     }
   ]
