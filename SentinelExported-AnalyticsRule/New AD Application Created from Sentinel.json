@@ -1,0 +1,95 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/16376dd7-bd44-44cd-b73c-9fa22393eb25')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/16376dd7-bd44-44cd-b73c-9fa22393eb25')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2023-02-01-preview",
+      "properties": {
+        "displayName": "New AD Application Created from Sentinel",
+        "description": "This rule detects new application registrations, service principals creations from Azure Sentinel instance. This will help monitoring app registrations that were not created from user.",
+        "alertDetailsOverride": null,
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "entityType": "Account",
+            "fieldMappings": [
+              {
+                "columnName": "Identity",
+                "identifier": "FullName"
+              }
+            ]
+          },
+          {
+            "entityType": "AzureResource",
+            "fieldMappings": [
+              {
+                "columnName": "ResourceId",
+                "identifier": "ResourceId"
+              }
+            ]
+          },
+          {
+            "entityType": "CloudApplication",
+            "fieldMappings": [
+              {
+                "columnName": "ApplicationId",
+                "identifier": "AppId"
+              }
+            ]
+          },
+          {
+            "entityType": "CloudApplication",
+            "fieldMappings": [
+              {
+                "columnName": "ApplicationName",
+                "identifier": "Name"
+              }
+            ]
+          }
+        ],
+        "eventGroupingSettings": {
+          "aggregationKind": "AlertPerResult"
+        },
+        "incidentConfiguration": {
+          "createIncident": false,
+          "groupingConfiguration": {
+            "enabled": false,
+            "groupByAlertDetails": [],
+            "groupByCustomDetails": [],
+            "groupByEntities": [],
+            "lookbackDuration": "PT5H",
+            "matchingMethod": "AllEntities",
+            "reopenClosedIncident": false
+          }
+        },
+        "query": "AuditLogs\n| where Category == \"ApplicationManagement\"\n| where OperationName in (\"Add application\", \"Add service principal\")\n| where Identity == \"Azure Security Insights\"\n| extend ApplicationName = tostring(TargetResources[0].displayName)\n| extend ApplicationId = tostring(AdditionalDetails[0].value)\n| project\n    TimeGenerated,\n    ActivityDateTime,\n    AADOperationType,\n    Identity,\n    ApplicationName,\n    ApplicationId,\n    ResourceId\n\n",
+        "queryPeriod": "PT5M",
+        "queryFrequency": "PT5M",
+        "sentinelEntitiesMappings": null,
+        "severity": "Medium",
+        "suppressionDuration": "PT5H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Persistence"
+        ],
+        "techniques": [
+          "T1136"
+        ],
+        "templateVersion": null,
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "alertRuleTemplateName": null,
+        "enabled": false
+      }
+    }
+  ]
+}
