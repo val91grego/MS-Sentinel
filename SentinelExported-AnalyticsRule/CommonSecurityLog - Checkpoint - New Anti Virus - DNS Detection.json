@@ -1,0 +1,85 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/ec9c7c79-c876-42c2-a64c-da908e39f4f2')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/ec9c7c79-c876-42c2-a64c-da908e39f4f2')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2023-02-01-preview",
+      "properties": {
+        "displayName": "CommonSecurityLog - Checkpoint - New Anti Virus - DNS Detection",
+        "description": "This rule captures the detections of Check Point's New Anti Virus product regarding suspicious/malicious DNS Requests.",
+        "alertDetailsOverride": {
+          "alertDescriptionFormat": "A DNS request was detected for the domain: {{RequestURL}} with the signature of: {{Activity}} and action: {{DeviceAction}}",
+          "alertDisplayNameFormat": "Check Point - DNS Detection for domain: {{RequestURL}}",
+          "alertDynamicProperties": null,
+          "alertSeverityColumnName": null,
+          "alertTacticsColumnName": null
+        },
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "entityType": "DNS",
+            "fieldMappings": [
+              {
+                "columnName": "RequestURL",
+                "identifier": "DomainName"
+              }
+            ]
+          },
+          {
+            "entityType": "IP",
+            "fieldMappings": [
+              {
+                "columnName": "SourceIP",
+                "identifier": "Address"
+              }
+            ]
+          }
+        ],
+        "eventGroupingSettings": {
+          "aggregationKind": "SingleAlert"
+        },
+        "incidentConfiguration": {
+          "createIncident": false,
+          "groupingConfiguration": {
+            "enabled": false,
+            "groupByAlertDetails": [],
+            "groupByCustomDetails": [],
+            "groupByEntities": [],
+            "lookbackDuration": "PT5H",
+            "matchingMethod": "AllEntities",
+            "reopenClosedIncident": false
+          }
+        },
+        "query": "workspace(\"717cba59-07b2-4797-8fad-807c2cb15ea9\").CommonSecurityLog\n| where DeviceVendor == \"Check Point\"\n| where DeviceProduct == \"New Anti Virus\"\n| where RequestURL !=\"\"\n| where not(Activity matches regex \"(?i)(Adware|BrowserHijacking|REP|Adwre|iOS\\\\s+Calendar\\\\s+Spam|Generic\\\\.TC\\\\.)\")\n| project Activity, RequestURL, FlexString2, DeviceEventClassID, DeviceAction,SourceIP, DestinationIP, DestinationPort, TimeGenerated\n",
+        "queryPeriod": "PT5M",
+        "queryFrequency": "PT5M",
+        "sentinelEntitiesMappings": null,
+        "severity": "Medium",
+        "suppressionDuration": "PT5H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "CommandAndControl",
+          "Exfiltration"
+        ],
+        "techniques": [
+          "T1071",
+          "T1048"
+        ],
+        "templateVersion": null,
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "alertRuleTemplateName": null,
+        "enabled": true
+      }
+    }
+  ]
+}
