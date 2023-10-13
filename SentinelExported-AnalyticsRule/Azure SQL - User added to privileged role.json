@@ -1,0 +1,121 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/cf70a6af-eca5-47f2-a275-e3887416f773')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/cf70a6af-eca5-47f2-a275-e3887416f773')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2023-02-01-preview",
+      "properties": {
+        "displayName": "Azure SQL - User added to privileged role",
+        "description": "This rule monitors Azure PaaS SQL server audit logs and trigger when a user added to a privileged role.",
+        "alertDetailsOverride": {
+          "alertDescriptionFormat": "In Azure SQL server, user {{target_server_principal_name_s}} added to privileged role {{object_name_s}} from source user {{server_principal_name_s}}.",
+          "alertDisplayNameFormat": "Azure SQL - User added to privileged role - User: {{target_server_principal_name_s}} - Role: {{object_name_s}}",
+          "alertDynamicProperties": null,
+          "alertSeverityColumnName": null,
+          "alertTacticsColumnName": null
+        },
+        "customDetails": {
+          "CustomerName": "CustomerName"
+        },
+        "entityMappings": [
+          {
+            "entityType": "Account",
+            "fieldMappings": [
+              {
+                "columnName": "server_principal_name_s",
+                "identifier": "FullName"
+              }
+            ]
+          },
+          {
+            "entityType": "Account",
+            "fieldMappings": [
+              {
+                "columnName": "target_server_principal_name_s",
+                "identifier": "FullName"
+              }
+            ]
+          },
+          {
+            "entityType": "Host",
+            "fieldMappings": [
+              {
+                "columnName": "Resource",
+                "identifier": "HostName"
+              }
+            ]
+          },
+          {
+            "entityType": "IP",
+            "fieldMappings": [
+              {
+                "columnName": "client_ip_s",
+                "identifier": "Address"
+              }
+            ]
+          },
+          {
+            "entityType": "AzureResource",
+            "fieldMappings": [
+              {
+                "columnName": "_ResourceId",
+                "identifier": "ResourceId"
+              }
+            ]
+          },
+          {
+            "entityType": "CloudApplication",
+            "fieldMappings": [
+              {
+                "columnName": "application_name_s",
+                "identifier": "Name"
+              }
+            ]
+          }
+        ],
+        "eventGroupingSettings": {
+          "aggregationKind": "AlertPerResult"
+        },
+        "incidentConfiguration": {
+          "createIncident": false,
+          "groupingConfiguration": {
+            "enabled": false,
+            "groupByAlertDetails": [],
+            "groupByCustomDetails": [],
+            "groupByEntities": [],
+            "lookbackDuration": "PT5H",
+            "matchingMethod": "AllEntities",
+            "reopenClosedIncident": false
+          }
+        },
+        "query": "let privilegedroles = dynamic(\n    [\"db_owner\", \"db_securityadmin\", \"db_accessadmin\", \"db_ddladmin\"]);\ncross_workspace_azure_diagnostics\n| where Category == \"SQLSecurityAuditEvents\"\n| where action_name_s == \"ADD MEMBER\"\n| where class_type_description_s == \"ROLE\"\n| where object_name_s in (privilegedroles)\n| project\n    TimeGenerated,\n    CustomerName,\n    originalEventTimestamp_t,\n    Resource,\n    client_ip_s,\n    database_principal_name_s,\n    target_server_principal_name_s,\n    target_database_principal_name_s,\n    database_name_s,\n    object_name_s,\n    statement_s,\n    application_name_s,\n    session_server_principal_name_s,\n    server_principal_name_s,\n    server_instance_name_s,\n    host_name_s,\n    _ResourceId\n",
+        "queryPeriod": "PT5M",
+        "queryFrequency": "PT5M",
+        "sentinelEntitiesMappings": null,
+        "severity": "Medium",
+        "suppressionDuration": "PT5H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Persistence"
+        ],
+        "techniques": [
+          "T1556"
+        ],
+        "templateVersion": null,
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "alertRuleTemplateName": null,
+        "enabled": false
+      }
+    }
+  ]
+}
