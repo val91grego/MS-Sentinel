@@ -1,0 +1,93 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/2d3c362f-3e67-4652-bf62-098c365ecc9a')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/2d3c362f-3e67-4652-bf62-098c365ecc9a')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2023-02-01-preview",
+      "properties": {
+        "displayName": "AUTO DISABLED BehaviorAnalytics - Anomalous Activity",
+        "description": "The alert rule was disabled due to too many consecutive failures. Reason: You do not have access permissions to one or more of the resources in the query. This rule query generates an output of all users performing an \"action\" operation (various potentially high impact actions), where one or more features of the activity deviate from the user, his peers or the tenant profile.",
+        "alertDetailsOverride": {
+          "alertDescriptionFormat": "This rule query generates an output of all users performing an \"action\" operation (various potentially high impact actions), where one or more features of the activity deviate from the user, his peers or the tenant profile baselines according to microsoft UEBA analytics. This action is deemed abnormal because of {{uncommon_Attribute}} . Investigate the overall activity of the user that performed {{ActivityType}}  operation for abnormal elements.",
+          "alertDisplayNameFormat": "BehaviorAnalytics - Anomalous {{type_s}}  by user {{UserName}}",
+          "alertDynamicProperties": null,
+          "alertSeverityColumnName": null,
+          "alertTacticsColumnName": null
+        },
+        "customDetails": {
+          "UncommonAttribute": "uncommon_Attribute",
+          "customerName": "CustomerName"
+        },
+        "entityMappings": [
+          {
+            "entityType": "Account",
+            "fieldMappings": [
+              {
+                "columnName": "UserName",
+                "identifier": "Name"
+              }
+            ]
+          },
+          {
+            "entityType": "Account",
+            "fieldMappings": [
+              {
+                "columnName": "UserPrincipalName",
+                "identifier": "AadUserId"
+              }
+            ]
+          },
+          {
+            "entityType": "IP",
+            "fieldMappings": [
+              {
+                "columnName": "SourceIPAddress",
+                "identifier": "Address"
+              }
+            ]
+          }
+        ],
+        "eventGroupingSettings": {
+          "aggregationKind": "AlertPerResult"
+        },
+        "incidentConfiguration": {
+          "createIncident": false,
+          "groupingConfiguration": {
+            "enabled": false,
+            "groupByAlertDetails": [],
+            "groupByCustomDetails": [],
+            "groupByEntities": [],
+            "lookbackDuration": "PT5H",
+            "matchingMethod": "AllEntities",
+            "reopenClosedIncident": false
+          }
+        },
+        "query": "let operations = dynamic(['Create role assignment','Remove database vulnerability assessment rule baseline','Export an existing database','Run Command on Virtual Machine']);\r\ncross_workspace_behavior_analytics\r\n| where ActionType in(operations)\r\n| where ActivityInsights contains \"True\"\r\n| project TimeGenerated, CustomerName, UserName, UserPrincipalName, UsersInsights, ActivityType, ActionType,ActivityInsights ,SourceIPAddress, SourceIPLocation, SourceDevice, DevicesInsights\r\n| extend type_s = case(\r\nActionType == 'Create role assignment', 'Activity Role Assignment',\r\nActionType == 'Remove database vulnerability assessment rule baseline', 'Defensive Mechanism Modification',\r\nActionType == 'Export an existing database', 'Data Access',\r\n'Code Execution'\r\n)\r\n| extend uncommon_Attribute = extract('([A-Za-z]+)\":\"True', 1, tostring(ActivityInsights))",
+        "queryPeriod": "PT1H",
+        "queryFrequency": "PT1H",
+        "sentinelEntitiesMappings": null,
+        "severity": "Medium",
+        "suppressionDuration": "PT5H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Impact"
+        ],
+        "techniques": [],
+        "templateVersion": null,
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "alertRuleTemplateName": null,
+        "enabled": false
+      }
+    }
+  ]
+}
