@@ -1,0 +1,64 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/720eaf98-9f9d-4e7a-9a43-7ca24391dcde')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/720eaf98-9f9d-4e7a-9a43-7ca24391dcde')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2023-02-01-preview",
+      "properties": {
+        "displayName": "TEST - Possible Kerberoasting Attempt",
+        "description": "This alert indicates that a Specific User from a Specific Address requested tickets for multiple Services. using weak encryption. If it triggers, it is an indication that this specific user and host might be compromised",
+        "alertDetailsOverride": {
+          "alertDescriptionFormat": "User {{destinationUserName_s}} from {{sourceAddress_s}} requested kerberos tickets for the following services: {{ServiceNames}} in an abnormal time span.",
+          "alertDisplayNameFormat": "TEST - Arcsight - Possible Kerberoasting Attempt - User: {{destinationUserName_s}} ",
+          "alertDynamicProperties": null,
+          "alertSeverityColumnName": null,
+          "alertTacticsColumnName": null
+        },
+        "customDetails": {},
+        "entityMappings": null,
+        "eventGroupingSettings": {
+          "aggregationKind": "SingleAlert"
+        },
+        "incidentConfiguration": {
+          "createIncident": false,
+          "groupingConfiguration": {
+            "enabled": false,
+            "groupByAlertDetails": [],
+            "groupByCustomDetails": [],
+            "groupByEntities": [],
+            "lookbackDuration": "PT5H",
+            "matchingMethod": "AllEntities",
+            "reopenClosedIncident": false
+          }
+        },
+        "query": "union workspace(\"obrela-mssp\").CEF_CL\n| where fileName_s == \"Kerberoasting - Weak Encryption - TEST\"\n| summarize ServiceNames = make_set(destinationServiceName_s) by sourceAddress_s, destinationUserName_s, bin(TimeGenerated, 8h)\n| where array_length(ServiceNames) > 4\n",
+        "queryPeriod": "PT8H",
+        "queryFrequency": "PT30M",
+        "sentinelEntitiesMappings": null,
+        "severity": "Medium",
+        "suppressionDuration": "PT5H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "CredentialAccess"
+        ],
+        "techniques": [
+          "T1558"
+        ],
+        "templateVersion": null,
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "alertRuleTemplateName": null,
+        "enabled": true
+      }
+    }
+  ]
+}
