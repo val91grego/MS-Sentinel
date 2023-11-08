@@ -1,0 +1,128 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/451466d6-3e6b-43cd-bcd8-df14cab7ae25')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/451466d6-3e6b-43cd-bcd8-df14cab7ae25')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2023-02-01-preview",
+      "properties": {
+        "displayName": "Nozomi - Alert Detection - UAT",
+        "description": "This test rule creates incidents based on Nozomi Guardian version 10.232.72.5",
+        "alertDetailsOverride": {
+          "alertDescriptionFormat": "{{Description}} \n\nSourceAddress:{{sourceAddress}} \nDestinationAddress:{{destinationAddress}}",
+          "alertDisplayNameFormat": "{{CustomerName}} - Nozomi Alert: {{name_s}}- Device: {{HostName}}",
+          "alertDynamicProperties": null,
+          "alertSeverityColumnName": "Severity",
+          "alertTacticsColumnName": "Tactic"
+        },
+        "customDetails": {
+          "CustomerName": "CustomerName",
+          "MDRPRODUCT": "MDRPRODUCT",
+          "categoryTechnique": "categoryTechnique",
+          "Technique": "Technique",
+          "Severity": "Severity",
+          "Tactic": "Tactic",
+          "sourceAddress": "sourceAddress",
+          "destinationAddress": "destinationAddress",
+          "edge_id": "VantageAlertId",
+          "sourceHostName": "sourceHostName",
+          "DeviceHostName": "HostName"
+        },
+        "entityMappings": [
+          {
+            "entityType": "Host",
+            "fieldMappings": [
+              {
+                "columnName": "HostName",
+                "identifier": "HostName"
+              }
+            ]
+          },
+          {
+            "entityType": "Host",
+            "fieldMappings": [
+              {
+                "columnName": "sourceHostName",
+                "identifier": "HostName"
+              }
+            ]
+          },
+          {
+            "entityType": "IP",
+            "fieldMappings": [
+              {
+                "columnName": "destinationAddress",
+                "identifier": "Address"
+              }
+            ]
+          },
+          {
+            "entityType": "IP",
+            "fieldMappings": [
+              {
+                "columnName": "sourceAddress",
+                "identifier": "Address"
+              }
+            ]
+          },
+          {
+            "entityType": "Account",
+            "fieldMappings": [
+              {
+                "columnName": "VantageAlertId",
+                "identifier": "Name"
+              }
+            ]
+          }
+        ],
+        "eventGroupingSettings": {
+          "aggregationKind": "AlertPerResult"
+        },
+        "incidentConfiguration": {
+          "createIncident": true,
+          "groupingConfiguration": {
+            "enabled": false,
+            "groupByAlertDetails": [],
+            "groupByCustomDetails": [
+              "CustomerName",
+              "MDRPRODUCT",
+              "sourceHostName",
+              "DeviceHostName"
+            ],
+            "groupByEntities": [],
+            "lookbackDuration": "PT10M",
+            "matchingMethod": "Selected",
+            "reopenClosedIncident": false
+          }
+        },
+        "query": "//Watchlist contains mapping between Nozomi Alertnams & MITRE Tactics\r\nlet Tactics= _GetWatchlist('NozomiAttacksTactics');\r\nVesselOT_CL\r\n//Filterout health & audit events\r\n| where deviceEventClassId_s !startswith \"AUDIT\"\r\n| where deviceEventClassId_s !in (\"HEALTH\")\r\n| extend IncidentNameTime = format_datetime(TimeGenerated, 'dd-MM-yyyy')\r\n| extend Message = tostring(msg_s)\r\n| extend deviceAddress = tostring(dvc_s)\r\n| extend dvchostName = tostring(dvchost_s)\r\n| extend sourceAddress = tostring(src_s)\r\n| extend sourceHostName = tostring(shost_s)\r\n| extend destinationAddress = tostring(dst_s)\r\n| extend agentHostName = tostring(hostname_s)\r\n//| extend destinationHostName = tostring(dhost_s)\r\n| extend destinationPort = tostring(dpt_s)\r\n| extend Protocol = tostring(proto_s)\r\n| extend Technique = tostring(flexString1_s)\r\n//Vantage Alert Id\r\n| extend VantageAlertId = tostring(cs3_g)\r\n//Prepare Alert Description\r\n| extend Description1 = iff(isnotempty(Protocol), strcat(Message, \". | Atttack Protocol: \", toupper(Protocol), \" | DeviceEventCategory: \", deviceEventClassId_s, \" | Nozomi AlertId: \", VantageAlertId), strcat(Message, \". | DeviceEventCategory: \", deviceEventClassId_s, \" | Nozomi AlertId: \", VantageAlertId))\r\n| extend Description = iff(isnotempty(Technique), strcat(Description1, \" | Nozomi Alert MITRE Technique: \", Technique), Description1)\r\n| extend Severity = iff(severity_s in (\"1\", \"2\", \"3\", \"4\"), \"Low\",\r\n    iff(severity_s in (\"5\", \"6\", \"7\"), \"Medium\", \"High\"))\r\n//Prepare some categoryTechnicques based on Alert deviceEventClassId\r\n| extend categoryTechnique = iff(deviceEventClassId_s contains \"SCAN\", \"/Scan\",\r\n    iff(deviceEventClassId_s contains \"Flood\", \"/DoS\",\r\n    iff(deviceEventClassId_s contains \"PUA\", \"/Code/Virus\",\r\n    iff(deviceEventClassId_s contains \"MALFORMED\", \"/Code/Virus\",\r\n    iff(deviceEventClassId_s contains \"MALWARE\", \"/Code/Virus\",\r\n    iff(deviceEventClassId_s contains \"WEAK\", \"/Exploit/Weak Configuration\",\r\n    iff(deviceEventClassId_s contains \"CLEARTEXT\", \"Exploit/Weak Configuration\",\r\n    iff(deviceEventClassId_s contains \"NAVIGATION\", \"/Information Leak/Covert Channel\",\r\n    iff(deviceEventClassId_s contains \"MULTIPLE-UNSUCCESSFUL-LOGINS\", \"/Brute Force/Login\", \"/Exploit/Privilege Escalation\")))))))))\r\n| extend MDRPRODUCT = \"ICS\"\r\n| extend CustomerName = \"UAT-Client\"\r\n| extend HostName = \"UAT-Nozomi-Host\"\r\n| lookup kind=inner (Tactics) on $left.name_s == $right.Name\r\n| project TimeGenerated,\r\n    HostName,\r\n\tsourceHostName,\r\n    sourceAddress,\r\n    destinationAddress,\r\n    CustomerName,\r\n    categoryTechnique,\r\n    name_s,\r\n    deviceEventClassId_s,\r\n    MDRPRODUCT,\r\n    Description,\r\n    IncidentNameTime,\r\n    VantageAlertId,\r\n    Tactic,\r\n    Technique,\r\n    Severity",
+        "queryPeriod": "PT2H",
+        "queryFrequency": "PT5M",
+        "sentinelEntitiesMappings": null,
+        "severity": "High",
+        "suppressionDuration": "PT5H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Execution",
+          "Impact"
+        ],
+        "techniques": [
+          "T1569"
+        ],
+        "templateVersion": null,
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "alertRuleTemplateName": null,
+        "enabled": true
+      }
+    }
+  ]
+}
