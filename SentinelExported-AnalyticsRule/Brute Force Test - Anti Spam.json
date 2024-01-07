@@ -1,0 +1,78 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/d868917c-3766-4b0d-9727-5cb85fc58366')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/d868917c-3766-4b0d-9727-5cb85fc58366')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2023-02-01-preview",
+      "properties": {
+        "displayName": "Brute Force Test - Anti Spam",
+        "description": "This rule correlates multiple failed attempts on a VPN service from arcsight correlation events towards a single username. Kindly review and investigate the activity on arcsight platform.",
+        "alertDetailsOverride": {
+          "alertDescriptionFormat": "Description!",
+          "alertDisplayNameFormat": "Arcsight - {{CustomerName}} - Possible Brute Force on VPN src: {{sourceAddress_s}} on Multiple Users",
+          "alertDynamicProperties": null,
+          "alertSeverityColumnName": null,
+          "alertTacticsColumnName": null
+        },
+        "customDetails": {
+          "CustomerName": "CustomerName",
+          "CustomerURI": "customerURI",
+          "Count_s": "count_"
+        },
+        "entityMappings": [
+          {
+            "entityType": "IP",
+            "fieldMappings": [
+              {
+                "columnName": "sourceAddress_s",
+                "identifier": "Address"
+              }
+            ]
+          }
+        ],
+        "eventGroupingSettings": {
+          "aggregationKind": "AlertPerResult"
+        },
+        "incidentConfiguration": {
+          "createIncident": false,
+          "groupingConfiguration": {
+            "enabled": false,
+            "groupByAlertDetails": [],
+            "groupByCustomDetails": [],
+            "groupByEntities": [],
+            "lookbackDuration": "PT5H",
+            "matchingMethod": "AllEntities",
+            "reopenClosedIncident": false
+          }
+        },
+        "query": "union workspace(\"obrela-mssp\").cross_workspace_cef_correlation\r\n| where categoryDeviceGroup_s == \"/VPN\" and categoryBehavior_s == \"/Authentication/Verify\" and categoryOutcome_s == \"/Failure\"\r\n//| where not( ipv4_is_private(sourceAddress_s) )\r\n| where not(isempty(sourceAddress_s))\r\n| summarize count(), UserSet=make_set(destinationUserName_s) by tostring(CustomerName), sourceAddress_s, deviceProduct_s\r\n| where count_ > 18\r\n| extend customerURI=strcat(\"/All Customers/Customers/\",CustomerName)",
+        "queryPeriod": "PT15M",
+        "queryFrequency": "PT15M",
+        "sentinelEntitiesMappings": null,
+        "severity": "Medium",
+        "suppressionDuration": "PT5H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "InitialAccess"
+        ],
+        "techniques": [
+          "T1133"
+        ],
+        "templateVersion": null,
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "alertRuleTemplateName": null,
+        "enabled": false
+      }
+    }
+  ]
+}
