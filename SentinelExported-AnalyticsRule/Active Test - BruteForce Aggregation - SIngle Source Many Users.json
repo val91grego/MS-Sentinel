@@ -1,0 +1,75 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/f9ffd122-1ee2-4cab-91ab-42c708420aeb')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/f9ffd122-1ee2-4cab-91ab-42c708420aeb')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2023-02-01-preview",
+      "properties": {
+        "displayName": "Active Test - BruteForce Aggregation - SIngle Source Many Users",
+        "description": "",
+        "alertDetailsOverride": {
+          "alertDescriptionFormat": "The following users have been targetted {{UserSet}} ",
+          "alertDisplayNameFormat": "Active Test - {{CustomerName}} - SOURCE - A possible brute-force has been identifed from {{sourceAddress_s}}  on {{Product}}",
+          "alertDynamicProperties": null,
+          "alertSeverityColumnName": null,
+          "alertTacticsColumnName": null
+        },
+        "customDetails": {
+          "CustomerName": "CustomerName",
+          "CustomerURI": "customerURI",
+          "Count_s": "count_",
+          "Product": "Product"
+        },
+        "entityMappings": [
+          {
+            "entityType": "IP",
+            "fieldMappings": [
+              {
+                "columnName": "sourceAddress_s",
+                "identifier": "Address"
+              }
+            ]
+          }
+        ],
+        "eventGroupingSettings": {
+          "aggregationKind": "AlertPerResult"
+        },
+        "incidentConfiguration": {
+          "createIncident": false,
+          "groupingConfiguration": {
+            "enabled": false,
+            "groupByAlertDetails": [],
+            "groupByCustomDetails": [],
+            "groupByEntities": [],
+            "lookbackDuration": "PT5H",
+            "matchingMethod": "AllEntities",
+            "reopenClosedIncident": false
+          }
+        },
+        "query": "union workspace(\"obrela-mssp\").cross_workspace_cef_correlation\r\n| where categoryBehavior_s == \"/Authentication/Verify\" and categoryOutcome_s == \"/Failure\"\r\n| where not(isempty(sourceAddress_s))\r\n| extend Product = categoryDeviceGroup_s\r\n| summarize count(), UserSet=make_set(destinationUserName_s) by tostring(CustomerName), sourceAddress_s, deviceProduct_s, Product\r\n| where count_ > 18\r\n| extend customerURI=strcat(\"/All Customers/Customers/\",CustomerName)",
+        "queryPeriod": "PT15M",
+        "queryFrequency": "PT15M",
+        "sentinelEntitiesMappings": null,
+        "severity": "Medium",
+        "suppressionDuration": "PT5H",
+        "suppressionEnabled": false,
+        "tactics": [],
+        "techniques": [],
+        "templateVersion": null,
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "alertRuleTemplateName": null,
+        "enabled": false
+      }
+    }
+  ]
+}
