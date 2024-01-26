@@ -1,0 +1,60 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/26964458-f1d2-4dc5-a155-1517efc5c653')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/26964458-f1d2-4dc5-a155-1517efc5c653')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2023-02-01-preview",
+      "properties": {
+        "displayName": "Active Test - Brute Force Aggregation",
+        "description": "",
+        "alertDetailsOverride": {
+          "alertDescriptionFormat": "The users are {{UserSet}} and got pwned {{count_}} times ",
+          "alertDisplayNameFormat": "Active Test - {{CustomerName}} got bruteforced from: {{sourceAddress_s}} , targetting users: {{UserSet}}  ",
+          "alertDynamicProperties": null,
+          "alertSeverityColumnName": null,
+          "alertTacticsColumnName": null
+        },
+        "customDetails": null,
+        "entityMappings": null,
+        "eventGroupingSettings": {
+          "aggregationKind": "AlertPerResult"
+        },
+        "incidentConfiguration": {
+          "createIncident": false,
+          "groupingConfiguration": {
+            "enabled": false,
+            "groupByAlertDetails": [],
+            "groupByCustomDetails": [],
+            "groupByEntities": [],
+            "lookbackDuration": "PT5H",
+            "matchingMethod": "AllEntities",
+            "reopenClosedIncident": false
+          }
+        },
+        "query": "union workspace(\"obrela-mssp\").cross_workspace_cef_correlation\r\n| where categoryDeviceGroup_s == \"/VPN\" and categoryBehavior_s == \"/Authentication/Verify\" and categoryOutcome_s == \"/Failure\"\r\n| where not(isempty(sourceAddress_s))\r\n| summarize count(), UserSet=make_set(destinationUserName_s) by tostring(CustomerName), sourceAddress_s, deviceProduct_s, tostring(CustomerName)\r\n| where count_ > 10",
+        "queryPeriod": "PT15M",
+        "queryFrequency": "PT15M",
+        "sentinelEntitiesMappings": null,
+        "severity": "Medium",
+        "suppressionDuration": "PT5H",
+        "suppressionEnabled": false,
+        "tactics": [],
+        "techniques": [],
+        "templateVersion": null,
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "alertRuleTemplateName": null,
+        "enabled": false
+      }
+    }
+  ]
+}
