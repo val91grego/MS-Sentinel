@@ -1,0 +1,72 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/d2188a66-5e4a-4320-82f0-a739740076fe')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/d2188a66-5e4a-4320-82f0-a739740076fe')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2023-02-01-preview",
+      "properties": {
+        "displayName": "Test  - Process Create - Test",
+        "description": "Test  - Process Create - Test",
+        "alertDetailsOverride": {
+          "alertDescriptionFormat": "Test - Process Create: {{Activity}} {{Account}} {{Computer}} ",
+          "alertDisplayNameFormat": "Test - Process Create: {{Activity}} {{Account}} {{Computer}} ",
+          "alertDynamicProperties": null,
+          "alertSeverityColumnName": null,
+          "alertTacticsColumnName": null
+        },
+        "customDetails": {},
+        "entityMappings": [
+          {
+            "entityType": "Host",
+            "fieldMappings": [
+              {
+                "columnName": "Computer",
+                "identifier": "HostName"
+              }
+            ]
+          }
+        ],
+        "eventGroupingSettings": {
+          "aggregationKind": "SingleAlert"
+        },
+        "incidentConfiguration": {
+          "createIncident": true,
+          "groupingConfiguration": {
+            "enabled": true,
+            "groupByAlertDetails": [],
+            "groupByCustomDetails": [],
+            "groupByEntities": [
+              "Host"
+            ],
+            "lookbackDuration": "PT5H",
+            "matchingMethod": "Selected",
+            "reopenClosedIncident": false
+          }
+        },
+        "query": "union workspace(\"s00-wd-law-weu-001\").SecurityEvent\r\n| where Activity contains \"4688\"\r\n| where Account == \"WD\\\\SVO3601$\"\r\n| where Computer == \"SVO3601.corp.wintershalldea.com\"\r\n| summarize TotalActivities = count(), StartTime=min(TimeGenerated), EndTime=max(TimeGenerated) by Activity, Account, Computer",
+        "queryPeriod": "PT5H",
+        "queryFrequency": "PT5H",
+        "sentinelEntitiesMappings": null,
+        "severity": "Informational",
+        "suppressionDuration": "PT5H",
+        "suppressionEnabled": false,
+        "tactics": [],
+        "techniques": [],
+        "templateVersion": null,
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "alertRuleTemplateName": null,
+        "enabled": false
+      }
+    }
+  ]
+}
