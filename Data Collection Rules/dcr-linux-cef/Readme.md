@@ -1,2 +1,1 @@
-![Deploy to Azure](https://aka.ms/deploytoazurebutton)
-<img src="https://aka.ms/deploytoazurebutton"/>
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https://raw.githubusercontent.com/val91grego/MS-Sentinel/main/Data%20Collection%20Rules/dcr-linux-cef/azuredeploy.json)
