@@ -1,0 +1,121 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/62dd5d55-1a7a-4efa-921e-0343f124cb1f')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/62dd5d55-1a7a-4efa-921e-0343f124cb1f')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2023-02-01-preview",
+      "properties": {
+        "displayName": "Azure SQL - Potentially Sensitive Operation on Server",
+        "description": "This rule checks for sensitive actions on Azure PaaS SQL Server audit.",
+        "alertDetailsOverride": {
+          "alertDescriptionFormat": "Sensitive action {{action_name_s}} occurred on {{Resource}} Azure SQL Server. The following statement executed: {{statement_s}}.",
+          "alertDisplayNameFormat": "Azure SQL - Potentially Sensitive Operation on Server - {{Resource}}",
+          "alertDynamicProperties": null,
+          "alertSeverityColumnName": null,
+          "alertTacticsColumnName": null
+        },
+        "customDetails": {
+          "CustomerName": "CustomerName"
+        },
+        "entityMappings": [
+          {
+            "entityType": "IP",
+            "fieldMappings": [
+              {
+                "columnName": "client_ip_s",
+                "identifier": "Address"
+              }
+            ]
+          },
+          {
+            "entityType": "Host",
+            "fieldMappings": [
+              {
+                "columnName": "host_name_s",
+                "identifier": "HostName"
+              }
+            ]
+          },
+          {
+            "entityType": "AzureResource",
+            "fieldMappings": [
+              {
+                "columnName": "_ResourceId",
+                "identifier": "ResourceId"
+              }
+            ]
+          },
+          {
+            "entityType": "Host",
+            "fieldMappings": [
+              {
+                "columnName": "Resource",
+                "identifier": "HostName"
+              }
+            ]
+          },
+          {
+            "entityType": "CloudApplication",
+            "fieldMappings": [
+              {
+                "columnName": "application_name_s",
+                "identifier": "Name"
+              }
+            ]
+          },
+          {
+            "entityType": "Account",
+            "fieldMappings": [
+              {
+                "columnName": "server_principal_name_s",
+                "identifier": "Name"
+              }
+            ]
+          }
+        ],
+        "eventGroupingSettings": {
+          "aggregationKind": "AlertPerResult"
+        },
+        "incidentConfiguration": {
+          "createIncident": false,
+          "groupingConfiguration": {
+            "enabled": false,
+            "groupByAlertDetails": [],
+            "groupByCustomDetails": [],
+            "groupByEntities": [],
+            "lookbackDuration": "PT5H",
+            "matchingMethod": "AllEntities",
+            "reopenClosedIncident": false
+          }
+        },
+        "query": "let actionlist = dynamic(\n    [\"RESET PASSWORD\", \"DROP\"]);\ncross_workspace_azure_diagnostics\n| where Category == \"SQLSecurityAuditEvents\"\n| where action_name_s in (actionlist)\n| project\n    CustomerName,\n    TimeGenerated,\n    event_time_t,\n    action_name_s,\n    Resource,\n    LogicalServerName_s,\n    class_type_description_s,\n    client_ip_s,\n    host_name_s,\n    server_principal_name_s,\n    database_principal_name_s,\n    database_name_s,\n    object_name_s,\n    statement_s,\n    succeeded_s,\n    application_name_s,\n    _ResourceId",
+        "queryPeriod": "PT5M",
+        "queryFrequency": "PT5M",
+        "sentinelEntitiesMappings": null,
+        "severity": "High",
+        "suppressionDuration": "PT5H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Execution"
+        ],
+        "techniques": [
+          "T1609"
+        ],
+        "templateVersion": null,
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "alertRuleTemplateName": null,
+        "enabled": false
+      }
+    }
+  ]
+}
