@@ -1,0 +1,87 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/19c835a2-8a9c-4fce-8046-f7782130c221')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/19c835a2-8a9c-4fce-8046-f7782130c221')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2023-02-01-preview",
+      "properties": {
+        "displayName": "Azure SQL - Multiple Failed Logins for Different Usernames",
+        "description": "This rule correlates multiple authentication failure events for different usernames from same IP, MSSQL server in Azure PaaS SQL services.",
+        "alertDetailsOverride": {
+          "alertDescriptionFormat": "An entity from the IP: {{client_ip_s}} on the MSSQL server: {{server_instance_name_s}} performed potentially a username enumeration attempt.",
+          "alertDisplayNameFormat": "Username Enumeration from {{client_ip_s}} on {{server_instance_name_s}} ",
+          "alertDynamicProperties": null,
+          "alertSeverityColumnName": null,
+          "alertTacticsColumnName": null
+        },
+        "customDetails": {
+          "Customer": "CustomerName"
+        },
+        "entityMappings": [
+          {
+            "entityType": "IP",
+            "fieldMappings": [
+              {
+                "columnName": "client_ip_s",
+                "identifier": "Address"
+              }
+            ]
+          },
+          {
+            "entityType": "Host",
+            "fieldMappings": [
+              {
+                "columnName": "server_instance_name_s",
+                "identifier": "HostName"
+              }
+            ]
+          }
+        ],
+        "eventGroupingSettings": {
+          "aggregationKind": "SingleAlert"
+        },
+        "incidentConfiguration": {
+          "createIncident": false,
+          "groupingConfiguration": {
+            "enabled": false,
+            "groupByAlertDetails": [],
+            "groupByCustomDetails": [],
+            "groupByEntities": [],
+            "lookbackDuration": "PT5H",
+            "matchingMethod": "AllEntities",
+            "reopenClosedIncident": false
+          }
+        },
+        "query": "let TimeFrame = 15m;\r\nlet numberOfUsernamesThreshold = 5;\r\ncross_workspace_azure_diagnostics\r\n| where TimeGenerated >= ago(TimeFrame)\r\n| where Category == \"SQLSecurityAuditEvents\"\r\n| where action_name_s == \"LOGIN FAILED\"\r\n| summarize\r\n    StartTimeUtc = min(TimeGenerated),\r\n    EndTimeUtc = max(TimeGenerated),\r\n    TotalDifferentUsernamesCount = dcount(server_principal_name_s)\r\n    by\r\n    CustomerName,\r\n    client_ip_s,\r\n    server_instance_name_s\r\n| where TotalDifferentUsernamesCount >= numberOfUsernamesThreshold",
+        "queryPeriod": "PT5M",
+        "queryFrequency": "PT5M",
+        "sentinelEntitiesMappings": null,
+        "severity": "Medium",
+        "suppressionDuration": "PT5H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "CredentialAccess",
+          "Discovery"
+        ],
+        "techniques": [
+          "T1110",
+          "T1087"
+        ],
+        "templateVersion": null,
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "alertRuleTemplateName": null,
+        "enabled": true
+      }
+    }
+  ]
+}
