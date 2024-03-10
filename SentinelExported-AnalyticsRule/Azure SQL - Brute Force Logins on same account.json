@@ -1,0 +1,85 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/db5e1d97-a1de-4a31-b6d3-06d5999c1af6')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/db5e1d97-a1de-4a31-b6d3-06d5999c1af6')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2023-02-01-preview",
+      "properties": {
+        "displayName": "Azure SQL - Brute Force Logins on same account",
+        "description": "This rule correlates multiple authentication failure events on same user account in Azure PaaS SQL services.",
+        "alertDetailsOverride": {
+          "alertDescriptionFormat": "{{TotalFailedLogons}} occurred on Azure SQL server using {{server_principal_name_s}} until {{EndTimeUtc}}.",
+          "alertDisplayNameFormat": "Azure SQL Brute Force Logins on same account - Account: {{server_principal_name_s}}",
+          "alertDynamicProperties": null,
+          "alertSeverityColumnName": null,
+          "alertTacticsColumnName": null
+        },
+        "customDetails": {
+          "CustomerName": "CustomerName"
+        },
+        "entityMappings": [
+          {
+            "entityType": "Account",
+            "fieldMappings": [
+              {
+                "columnName": "server_principal_name_s",
+                "identifier": "FullName"
+              }
+            ]
+          },
+          {
+            "entityType": "CloudApplication",
+            "fieldMappings": [
+              {
+                "columnName": "application_name_s",
+                "identifier": "Name"
+              }
+            ]
+          }
+        ],
+        "eventGroupingSettings": {
+          "aggregationKind": "AlertPerResult"
+        },
+        "incidentConfiguration": {
+          "createIncident": false,
+          "groupingConfiguration": {
+            "enabled": false,
+            "groupByAlertDetails": [],
+            "groupByCustomDetails": [],
+            "groupByEntities": [],
+            "lookbackDuration": "PT5H",
+            "matchingMethod": "AllEntities",
+            "reopenClosedIncident": false
+          }
+        },
+        "query": "let TimeFrame = 5m;\nlet failedThreshold = 50;\ncross_workspace_azure_diagnostics\n| where TimeGenerated >= ago(TimeFrame)\n| where Category == \"SQLSecurityAuditEvents\"\n| where action_name_s == \"LOGIN FAILED\"\n| summarize StartTimeUtc = min(TimeGenerated), EndTimeUtc = max(TimeGenerated), TotalFailedLogons=count() by server_principal_name_s, application_name_s, CustomerName\n| where TotalFailedLogons >= failedThreshold\n\n",
+        "queryPeriod": "PT5M",
+        "queryFrequency": "PT5M",
+        "sentinelEntitiesMappings": null,
+        "severity": "Medium",
+        "suppressionDuration": "PT5H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "CredentialAccess"
+        ],
+        "techniques": [
+          "T1110"
+        ],
+        "templateVersion": null,
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "alertRuleTemplateName": null,
+        "enabled": false
+      }
+    }
+  ]
+}
