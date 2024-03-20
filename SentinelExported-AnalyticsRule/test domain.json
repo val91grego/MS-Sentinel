@@ -1,0 +1,88 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/c20eab5e-b1dc-4e22-afc1-32793cfd2218')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/c20eab5e-b1dc-4e22-afc1-32793cfd2218')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2023-02-01-preview",
+      "properties": {
+        "displayName": "test domain",
+        "description": "test domain",
+        "alertDetailsOverride": {
+          "alertDescriptionFormat": "test grouping",
+          "alertDisplayNameFormat": "Alert! {{PolicySet}} ",
+          "alertDynamicProperties": null,
+          "alertSeverityColumnName": null,
+          "alertTacticsColumnName": null
+        },
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "entityType": "Account",
+            "fieldMappings": [
+              {
+                "columnName": "SubjectUserName",
+                "identifier": "Name"
+              }
+            ]
+          },
+          {
+            "entityType": "Host",
+            "fieldMappings": [
+              {
+                "columnName": "Computer",
+                "identifier": "HostName"
+              }
+            ]
+          },
+          {
+            "entityType": "File",
+            "fieldMappings": [
+              {
+                "columnName": "PolicySet",
+                "identifier": "Name"
+              }
+            ]
+          }
+        ],
+        "eventGroupingSettings": {
+          "aggregationKind": "SingleAlert"
+        },
+        "incidentConfiguration": {
+          "createIncident": true,
+          "groupingConfiguration": {
+            "enabled": false,
+            "groupByAlertDetails": [],
+            "groupByCustomDetails": [],
+            "groupByEntities": [],
+            "lookbackDuration": "PT5H",
+            "matchingMethod": "AllEntities",
+            "reopenClosedIncident": false
+          }
+        },
+        "query": "union workspace(\"viazadlogs\").SecurityEvent\r\n| where EventID in (\"4739\")\r\n| where not(isempty(Account))\r\n| summarize StartTime = min(TimeGenerated), EndTime = max(TimeGenerated), OPolicySet=make_set(DomainPolicyChanged) by bin(TimeGenerated,1d),SubjectUserName, Computer\r\n| extend SortedPolicySet = array_sort_asc(OPolicySet)\r\n| extend PolicySet = tostring(SortedPolicySet)\r\n| project-away OPolicySet,SortedPolicySet",
+        "queryPeriod": "PT1H",
+        "queryFrequency": "PT1H",
+        "sentinelEntitiesMappings": null,
+        "severity": "Medium",
+        "suppressionDuration": "PT5H",
+        "suppressionEnabled": false,
+        "tactics": [],
+        "techniques": [],
+        "templateVersion": null,
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "alertRuleTemplateName": null,
+        "enabled": false
+      }
+    }
+  ]
+}
